@@ -160,3 +160,7 @@ background-color: #002b6d;
 max-height: 400px;
 overflow: scroll;
 }
+
+.logo {
+  width: 100px;
+}

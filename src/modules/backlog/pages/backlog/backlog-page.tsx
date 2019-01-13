@@ -12,13 +12,10 @@ import { getIndicatorClass } from "../../../../core/models/domain/enums/priority
 import { AppPresetFilter } from "../../../../shared/components/preset-filter/preset-filter";
 
 
-
 interface BacklogPageState {
     currentPreset: PresetType;
     items: PtItem[];
 }
-
-
 
 export class BacklogPage extends React.Component<any, BacklogPageState> {
 

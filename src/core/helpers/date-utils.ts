@@ -7,3 +7,12 @@ export function datesForTask(t: PtTask) {
     t.dateModified = new Date(t.dateModified);
     t.dateStart = t.dateStart ? new Date(t.dateStart) : undefined;
 }
+
+export function formatDateEnUs(date: Date) {
+    return Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit'
+    }).format(date);
+}
+
