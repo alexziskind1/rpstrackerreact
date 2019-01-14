@@ -6,6 +6,7 @@ import './App.css';
 import { BacklogPage } from './modules/backlog/pages/backlog/backlog-page';
 import { DashboardPage } from './modules/dashboard/pages/dashboard/dashboard-page';
 import { MainMenu } from './shared/components/main-menu/main-menu';
+import { SideMenu } from './shared/components/side-menu/side-menu';
 
 
 class App extends Component {
@@ -16,6 +17,9 @@ class App extends Component {
           <MainMenu />
           <div className="container-fluid">
             <div className="row">
+
+              <SideMenu></SideMenu>
+
               <main role="main" className="col-md-9 ml-sm-auto col-lg-10 px-4">
                 <Switch>
                   <Route exact path="/">
