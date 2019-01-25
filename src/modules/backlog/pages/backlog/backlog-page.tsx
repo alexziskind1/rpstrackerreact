@@ -69,10 +69,15 @@ export class BacklogPage extends React.Component<any, BacklogPageState> {
             });
     }
 
+    public listItemTap(item: PtItem) {
+        // navigate to detail page
+        this.props.history.push(`/detail/${item.id}`);
+    }
+
     public render() {
         const rows = this.state.items.map(i => {
             return (
-                <tr key={i.id} className="pt-table-row">
+                <tr key={i.id} className="pt-table-row" onClick={(e) => this.listItemTap(i)}>
                     <td>
                         <img src={this.getIndicatorImage(i)} className="backlog-icon" />
                     </td>

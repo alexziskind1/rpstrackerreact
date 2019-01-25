@@ -7,6 +7,7 @@ import { BacklogPage } from './modules/backlog/pages/backlog/backlog-page';
 import { DashboardPage } from './modules/dashboard/pages/dashboard/dashboard-page';
 import { MainMenu } from './shared/components/main-menu/main-menu';
 import { SideMenu } from './shared/components/side-menu/side-menu';
+import { DetailPage } from './modules/backlog/pages/detail/detail-page';
 
 
 class App extends Component {
@@ -30,6 +31,16 @@ class App extends Component {
                     <Redirect exact to={{ pathname: "/backlog/open" }} />
                   </Route>
                   <Route exact path="/backlog/:preset" component={BacklogPage} />
+
+                  <Route
+                    exact
+                    path="/detail/:id"
+                    render={({ match }) => (
+                      <Redirect to={`/detail/${match.params.id}/details`} />
+                    )}
+                  />
+
+                  <Route exact path="/detail/:id/:screen" component={DetailPage} />
                 </Switch>
               </main>
             </div>
