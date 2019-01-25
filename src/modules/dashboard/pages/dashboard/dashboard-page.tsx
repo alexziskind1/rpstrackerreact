@@ -69,7 +69,6 @@ export class DashboardPage extends React.Component<any, DashboardPageState> {
     private refresh() {
         this.dashboardService.getStatusCounts(this.filter)
             .then(result => {
-
                 this.setState({
                     statusCounts: result
                 });

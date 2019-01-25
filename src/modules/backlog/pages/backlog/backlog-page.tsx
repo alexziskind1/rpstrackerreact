@@ -25,14 +25,13 @@ export class BacklogPage extends React.Component<any, BacklogPageState> {
 
     public items: PtItem[] = [];
 
-
     constructor(props: any) {
         super(props);
+        const { preset } = this.props.match.params;
         this.state = {
-            currentPreset: 'open',
+            currentPreset: preset ? preset : 'open',
             items: []
         };
-
     }
 
     public componentDidMount() {
@@ -58,10 +57,10 @@ export class BacklogPage extends React.Component<any, BacklogPageState> {
         this.setState({
             currentPreset: preset
         });
+        this.props.history.push(`/backlog/${[preset]}`);
     }
 
     private refresh() {
-        console.log(this.state.currentPreset);
         this.backlogService.getItems(this.state.currentPreset)
             .then(ptItems => {
                 this.setState({
@@ -71,7 +70,6 @@ export class BacklogPage extends React.Component<any, BacklogPageState> {
     }
 
     public render() {
-
         const rows = this.state.items.map(i => {
             return (
                 <tr key={i.id} className="pt-table-row">
