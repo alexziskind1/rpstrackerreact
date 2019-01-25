@@ -66,7 +66,7 @@ export class BacklogRepository {
             .then((response: Response) => response.json());
     }
 
-    /*
+
     public getPtItem(
         ptItemId: number,
     ): Promise<PtItem> {
@@ -74,26 +74,35 @@ export class BacklogRepository {
             .then((response: Response) => response.json());
     }
 
-    public insertPtItem(
-        item: PtItem,
-        successHandler: (nextItem: PtItem) => void
-    ) {
-        this.http.post<PtItem>(
-            this.postPtItemUrl(),
-            { item: item }
-        )
-            .subscribe(successHandler);
-    }
+
+    /*
+       public insertPtItem(
+           item: PtItem,
+           successHandler: (nextItem: PtItem) => void
+       ) {
+           this.http.post<PtItem>(
+               this.postPtItemUrl(),
+               { item: item }
+           )
+               .subscribe(successHandler);
+       }
+   */
 
     public updatePtItem(
         item: PtItem,
     ): Promise<PtItem> {
-        return this.http.put<PtItem>(
-            this.putPtItemUrl(item.id),
-            { item: item }
-        );
+        return fetch(this.putPtItemUrl(item.id),
+            {
+                method: 'PUT',
+                body: JSON.stringify({ item: item }),
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                })
+            })
+            .then((response: Response) => response.json());
     }
 
+    /*
     public deletePtItem(
         itemId: number,
         successHandler: () => void
@@ -103,7 +112,7 @@ export class BacklogRepository {
         )
             .subscribe(successHandler);
     }
-
+ 
     public insertPtTask(
         task: PtTask,
         ptItemId: number,
@@ -115,7 +124,7 @@ export class BacklogRepository {
         )
             .subscribe(successHandler);
     }
-
+ 
     public updatePtTask(
         task: PtTask,
         ptItemId: number,
@@ -127,7 +136,7 @@ export class BacklogRepository {
         )
             .subscribe(successHandler);
     }
-
+ 
     public deletePtTask(
         task: PtTask,
         ptItemId: number,
@@ -139,7 +148,7 @@ export class BacklogRepository {
         )
             .subscribe(successHandler);
     }
-
+ 
     public insertPtComment(
         comment: PtComment,
         ptItemId: number,
@@ -151,7 +160,7 @@ export class BacklogRepository {
         )
             .subscribe(successHandler);
     }
-
+ 
     public deletePtComment(
         ptCommentId: number,
         successHandler: () => void

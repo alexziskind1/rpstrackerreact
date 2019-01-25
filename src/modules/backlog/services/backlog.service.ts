@@ -10,6 +10,7 @@ import { map, tap } from 'rxjs/operators';
 
 import { CONFIG } from '../../../config';
 import { PresetType } from '../../../core/models/domain/types';
+import { datesForTask, datesForPtItem } from '../../../core/helpers/date-utils';
 
 
 export const tempCurrentUser = {
@@ -49,6 +50,7 @@ export class BacklogService {
             .then((ptItems: PtItem[]) => {
 
                 ptItems.forEach(i => {
+                    datesForPtItem(i);
                     this.setUserAvatarUrl(i.assignee);
                     i.comments.forEach(c => this.setUserAvatarUrl(c.user));
                 });
@@ -68,20 +70,21 @@ export class BacklogService {
             this.getPtItem(id);
         }
     }
+*/
 
 
-
-    public getPtItem(id: number): Observable<PtItem> {
+    public getPtItem(id: number): Promise<PtItem> {
         return this.repo.getPtItem(id)
-            .pipe(
-                tap((ptItem: PtItem) => {
-                    this.setUserAvatarUrl(ptItem.assignee);
-                    ptItem.comments.forEach(c => this.setUserAvatarUrl(c.user));
-                    ptItem.tasks.forEach(t => datesForTask(t));
-                })
-            );
+            .then((ptItem: PtItem) => {
+                datesForPtItem(ptItem);
+                this.setUserAvatarUrl(ptItem.assignee);
+                ptItem.comments.forEach(c => this.setUserAvatarUrl(c.user));
+                ptItem.tasks.forEach(t => datesForTask(t));
+                return ptItem;
+            });
     }
 
+    /*
     public addNewPtItem(newItem: PtNewItem, assignee: PtUser): Promise<PtItem> {
         const item: PtItem = {
             id: 0,
@@ -109,10 +112,13 @@ export class BacklogService {
             );
         });
     }
+*/
 
-    public updatePtItem(item: PtItem): Observable<PtItem> {
+    public updatePtItem(item: PtItem): Promise<PtItem> {
         return this.repo.updatePtItem(item);
     }
+
+    /*
 
     public deletePtItem(item: PtItem) {
         this.repo.deletePtItem(item.id,
