@@ -97,7 +97,7 @@ export class BacklogPage extends React.Component<any, BacklogPageState> {
                         </span>
                     </td>
                     <td><span className="li-estimate">{i.estimate}</span></td>
-                    <td><span className="li-date">{i.dateCreated}</span></td>
+                    <td><span className="li-date">{i.dateCreated.toDateString()}</span></td>
                 </tr>
             );
         });
