@@ -1,6 +1,6 @@
 import React from "react";
 
-import { PtItem, PtUser, PtTask } from "../../../../core/models/domain";
+import { PtItem, PtUser, PtTask, PtComment } from "../../../../core/models/domain";
 import { DetailScreenType } from "../../../../shared/models/ui/types/detail-screens";
 import { Store } from "../../../../core/state/app-store";
 import { BacklogRepository } from "../../repositories/backlog.repository";
@@ -12,6 +12,8 @@ import { PtUserService } from "../../../../core/services/pt-user-service";
 import { Observable, BehaviorSubject } from "rxjs";
 import { PtNewTask } from "../../../../shared/models/dto/pt-new-task";
 import { PtTaskUpdate } from "../../../../shared/models/dto/pt-task-update";
+import { PtItemChitchatComponent } from "../../components/item-chitchat/pt-item-chitchat";
+import { PtNewComment } from "../../../../shared/models/dto/pt-new-comment";
 
 interface DetailPageState {
     item: PtItem | undefined;
@@ -28,12 +30,15 @@ export class DetailPage extends React.Component<any, DetailPageState> {
     private itemId = 0;
     private users$: Observable<PtUser[]> = this.store.select<PtUser[]>('users');
     public tasks$: BehaviorSubject<PtTask[]> = new BehaviorSubject<PtTask[]>([]);
+    public comments$: BehaviorSubject<PtComment[]> = new BehaviorSubject<PtComment[]>([]);
+    public currentUser: PtUser | undefined;
 
     constructor(props: any) {
         super(props);
 
         const { id, screen } = this.props.match.params;
         this.itemId = id;
+        this.currentUser = this.store.value.currentUser;
 
         this.state = {
             item: undefined,
@@ -56,7 +61,7 @@ export class DetailPage extends React.Component<any, DetailPageState> {
                     item: item
                 });
                 this.tasks$.next(item.tasks);
-                // this.comments$.next(item.comments);
+                this.comments$.next(item.comments);
             });
     }
 
@@ -112,6 +117,15 @@ export class DetailPage extends React.Component<any, DetailPageState> {
         }
     }
 
+
+    public onAddNewComment(newComment: PtNewComment) {
+        if (this.state.item) {
+            this.backlogService.addNewPtComment(newComment, this.state.item).then(nextComment => {
+                this.comments$.next([nextComment].concat(this.comments$.value));
+            });
+        }
+    }
+
     public onUsersRequested() {
         this.ptUserService.fetchUsers();
     }
@@ -122,6 +136,9 @@ export class DetailPage extends React.Component<any, DetailPageState> {
                 return <PtItemDetailsComponent item={item} users$={this.users$} usersRequested={() => this.onUsersRequested()} itemSaved={(item) => this.onItemSaved(item)} />;
             case 'tasks':
                 return <PtItemTasksComponent tasks$={this.tasks$} addNewTask={(newTask) => this.onAddNewTask(newTask)} updateTask={(taskUpdate) => this.onUpdateTask(taskUpdate)} />;
+            case 'chitchat':
+                return <PtItemChitchatComponent comments$={this.comments$} currentUser={this.currentUser!} addNewComment={(newComment) => this.onAddNewComment(newComment)} />;
+
             default:
                 return <PtItemDetailsComponent item={item} users$={this.users$} usersRequested={() => this.onUsersRequested()} itemSaved={(item) => this.onItemSaved(item)} />;
         }

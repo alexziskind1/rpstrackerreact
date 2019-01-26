@@ -144,27 +144,29 @@ export class BacklogRepository {
             .then(response => response.json());
     }
 
-    /*
+
     public insertPtComment(
         comment: PtComment,
-        ptItemId: number,
-        successHandler: (nextComment: PtComment) => void
-    ) {
-        this.http.post<PtComment>(
-            this.postPtCommentUrl(),
-            { comment: comment, itemId: ptItemId }
-        )
-            .subscribe(successHandler);
+        ptItemId: number
+    ): Promise<PtComment> {
+        return fetch(this.postPtCommentUrl(), {
+            method: 'POST',
+            body: JSON.stringify({ comment: comment, itemId: ptItemId }),
+            headers: this.getJSONHeader()
+        })
+            .then(response => response.json());
     }
- 
-    public deletePtComment(
-        ptCommentId: number,
-        successHandler: () => void
-    ) {
-        this.http.delete(this.deletePtCommentUrl(ptCommentId))
-            .subscribe(successHandler);
-    }
-    */
+
+
+    /*
+       public deletePtComment(
+           ptCommentId: number,
+           successHandler: () => void
+       ) {
+           this.http.delete(this.deletePtCommentUrl(ptCommentId))
+               .subscribe(successHandler);
+       }
+       */
 
     private getJSONHeader() {
         return new Headers({

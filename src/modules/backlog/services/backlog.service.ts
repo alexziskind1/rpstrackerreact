@@ -13,6 +13,7 @@ import { PresetType } from '../../../core/models/domain/types';
 import { datesForTask, datesForPtItem } from '../../../core/helpers/date-utils';
 import { PtNewItem } from '../../../shared/models/dto/pt-new-item';
 import { PtNewTask } from '../../../shared/models/dto/pt-new-task';
+import { PtNewComment } from '../../../shared/models/dto/pt-new-comment';
 
 
 export const tempCurrentUser = {
@@ -196,7 +197,6 @@ export class BacklogService {
         });
     }
 
-    /*
     public addNewPtComment(newComment: PtNewComment, currentItem: PtItem): Promise<PtComment> {
         const comment: PtComment = {
             id: 0,
@@ -208,15 +208,14 @@ export class BacklogService {
         return new Promise<PtComment>((resolve, reject) => {
             this.repo.insertPtComment(
                 comment,
-                currentItem.id,
-                (nextComment: PtComment) => {
+                currentItem.id
+            )
+                .then((nextComment: PtComment) => {
                     resolve(nextComment);
                 }
-            );
+                );
         });
-
     }
-*/
 
     private setUserAvatarUrl(user: PtUser | undefined) {
         if (user) {
