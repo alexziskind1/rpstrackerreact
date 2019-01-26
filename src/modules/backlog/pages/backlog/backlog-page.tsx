@@ -7,14 +7,19 @@ import { PtItem } from "../../../../core/models/domain";
 import { ItemType } from "../../../../core/constants";
 
 import './backlog-page.css';
-import { PriorityEnum } from "../../../../core/models/domain/enums";
+
 import { getIndicatorClass } from "../../../../core/models/domain/enums/priority-helpers";
 import { AppPresetFilter } from "../../../../shared/components/preset-filter/preset-filter";
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
+import { PtNewItem } from "../../../../shared/models/dto/pt-new-item";
+import { EMPTY_STRING } from "../../../../core/helpers";
 
 
 interface BacklogPageState {
     currentPreset: PresetType;
     items: PtItem[];
+    showAddModal: boolean;
+    newItem: PtNewItem;
 }
 
 export class BacklogPage extends React.Component<any, BacklogPageState> {
@@ -24,13 +29,16 @@ export class BacklogPage extends React.Component<any, BacklogPageState> {
     private backlogService: BacklogService = new BacklogService(this.backlogRepo, this.store);
 
     public items: PtItem[] = [];
+    public itemTypesProvider = ItemType.List.map((t) => t.PtItemType);
 
     constructor(props: any) {
         super(props);
         const { preset } = this.props.match.params;
         this.state = {
             currentPreset: preset ? preset : 'open',
-            items: []
+            items: [],
+            showAddModal: false,
+            newItem: this.initModalNewItem()
         };
     }
 
@@ -74,7 +82,46 @@ export class BacklogPage extends React.Component<any, BacklogPageState> {
         this.props.history.push(`/detail/${item.id}`);
     }
 
+
+    private toggleModal() {
+        this.setState({
+            showAddModal: !this.state.showAddModal
+        });
+    }
+
+    public onFieldChange(e: any, formFieldName: string) {
+        if (!this.state.newItem) {
+            return;
+        }
+
+        this.setState({
+            newItem: { ...this.state.newItem, [formFieldName]: e.target.value }
+        });
+    }
+
+    public onAddSave() {
+        if (this.store.value.currentUser) {
+            this.backlogService.addNewPtItem(this.state.newItem, this.store.value.currentUser)
+                .then((nextItem: PtItem) => {
+                    this.setState({
+                        showAddModal: false,
+                        newItem: this.initModalNewItem(),
+                        items: [nextItem, ...this.state.items]
+                    });
+                });
+        }
+    }
+
+    private initModalNewItem(): PtNewItem {
+        return {
+            title: EMPTY_STRING,
+            description: EMPTY_STRING,
+            typeStr: 'PBI'
+        };
+    }
+
     public render() {
+
         const rows = this.state.items.map(i => {
             return (
                 <tr key={i.id} className="pt-table-row" onClick={(e) => this.listItemTap(i)}>
@@ -110,9 +157,8 @@ export class BacklogPage extends React.Component<any, BacklogPageState> {
                         <AppPresetFilter selectedPreset={this.state.currentPreset} onSelectPresetTap={(p) => this.onSelectPresetTap(p)} />
 
                         <div className="btn-group mr-2">
-
+                            <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => this.toggleModal()}>Add</button>
                         </div>
-
                     </div>
                 </div>
 
@@ -135,7 +181,57 @@ export class BacklogPage extends React.Component<any, BacklogPageState> {
                     </table>
                 </div>
 
-            </React.Fragment>
+                <Modal isOpen={this.state.showAddModal} toggle={() => this.toggleModal()} className={this.props.className}>
+                    <div className="modal-header">
+                        <h4 className="modal-title" id="modal-basic-title">Add New Item</h4>
+                        <button type="button" className="close" onClick={() => this.toggleModal()} aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <ModalBody>
+                        <form>
+                            <div className="form-group row">
+                                <label className="col-sm-2 col-form-label">Title</label>
+                                <div className="col-sm-10">
+                                    <input className="form-control" defaultValue={this.state.newItem.title} onChange={(e) => this.onFieldChange(e, 'title')} name="title" />
+                                </div>
+                            </div>
+
+                            <div className="form-group row">
+                                <label className="col-sm-2 col-form-label">Description</label>
+                                <div className="col-sm-10">
+                                    <textarea className="form-control" defaultValue={this.state.newItem.description} onChange={(e) => this.onFieldChange(e, 'description')} name="description"></textarea>
+                                </div>
+                            </div>
+
+                            <div className="form-group row">
+                                <label className="col-sm-2 col-form-label">Item Type</label>
+                                <div className="col-sm-10">
+                                    <select className="form-control" defaultValue={this.state.newItem.typeStr} onChange={(e) => this.onFieldChange(e, 'typeStr')} name="itemType">
+                                        {
+                                            this.itemTypesProvider.map(t => {
+                                                return (
+                                                    <option key={t} value={t}>
+                                                        {t}
+                                                    </option>
+                                                )
+                                            })
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                        </form >
+                    </ModalBody >
+                    <ModalFooter>
+                        <Button color="secondary" onClick={() => this.toggleModal()}>Cancel</Button>
+                        <Button color="primary" onClick={() => this.onAddSave()}>Save</Button>{' '}
+
+                    </ModalFooter>
+                </Modal >
+
+
+            </React.Fragment >
 
         );
     }

@@ -74,19 +74,17 @@ export class BacklogRepository {
             .then((response: Response) => response.json());
     }
 
-
-    /*
-       public insertPtItem(
-           item: PtItem,
-           successHandler: (nextItem: PtItem) => void
-       ) {
-           this.http.post<PtItem>(
-               this.postPtItemUrl(),
-               { item: item }
-           )
-               .subscribe(successHandler);
-       }
-   */
+    public insertPtItem(
+        item: PtItem
+    ): Promise<PtItem> {
+        return fetch(this.postPtItemUrl(),
+            {
+                method: 'POST',
+                body: JSON.stringify({ item: item }),
+                headers: this.getJSONHeader()
+            })
+            .then((response: Response) => response.json());
+    }
 
     public updatePtItem(
         item: PtItem,
@@ -95,9 +93,7 @@ export class BacklogRepository {
             {
                 method: 'PUT',
                 body: JSON.stringify({ item: item }),
-                headers: new Headers({
-                    'Content-Type': 'application/json'
-                })
+                headers: this.getJSONHeader()
             })
             .then((response: Response) => response.json());
     }
@@ -169,4 +165,10 @@ export class BacklogRepository {
             .subscribe(successHandler);
     }
     */
+
+    private getJSONHeader() {
+        return new Headers({
+            'Content-Type': 'application/json'
+        })
+    }
 }

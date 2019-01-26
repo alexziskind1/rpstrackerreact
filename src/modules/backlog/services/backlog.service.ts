@@ -11,6 +11,7 @@ import { map, tap } from 'rxjs/operators';
 import { CONFIG } from '../../../config';
 import { PresetType } from '../../../core/models/domain/types';
 import { datesForTask, datesForPtItem } from '../../../core/helpers/date-utils';
+import { PtNewItem } from '../../../shared/models/dto/pt-new-item';
 
 
 export const tempCurrentUser = {
@@ -84,13 +85,13 @@ export class BacklogService {
             });
     }
 
-    /*
+
     public addNewPtItem(newItem: PtNewItem, assignee: PtUser): Promise<PtItem> {
         const item: PtItem = {
             id: 0,
             title: newItem.title,
             description: newItem.description,
-            type: newItem.type,
+            type: newItem.typeStr,
             estimate: 0,
             priority: PriorityEnum.Medium,
             status: StatusEnum.Open,
@@ -101,18 +102,17 @@ export class BacklogService {
             dateModified: new Date()
         };
         return new Promise<PtItem>((resolve, reject) => {
-            this.repo.insertPtItem(
-                item,
-                (nextItem: PtItem) => {
+            this.repo.insertPtItem(item)
+                .then((nextItem: PtItem) => {
+                    datesForPtItem(nextItem);
                     this.setUserAvatar(nextItem.assignee);
 
                     nextItem.tasks.forEach(t => datesForTask(t));
                     resolve(nextItem);
-                }
-            );
+                });
         });
     }
-*/
+
 
     public updatePtItem(item: PtItem): Promise<PtItem> {
         return this.repo.updatePtItem(item);
