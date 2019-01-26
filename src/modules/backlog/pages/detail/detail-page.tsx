@@ -1,6 +1,6 @@
 import React from "react";
 
-import { PtItem } from "../../../../core/models/domain";
+import { PtItem, PtUser } from "../../../../core/models/domain";
 import { DetailScreenType } from "../../../../shared/models/ui/types/detail-screens";
 import { Store } from "../../../../core/state/app-store";
 import { BacklogRepository } from "../../repositories/backlog.repository";
@@ -8,6 +8,8 @@ import { BacklogService } from "../../services/backlog.service";
 import { PtItemDetailsComponent } from "../../components/item-details/pt-item-details";
 import { PtItemTasksComponent } from "../../components/item-tasks/pt-item-tasks";
 import { debug } from "util";
+import { PtUserService } from "../../../../core/services/pt-user-service";
+import { Observable } from "rxjs";
 
 interface DetailPageState {
     item: PtItem | undefined;
@@ -19,8 +21,10 @@ export class DetailPage extends React.Component<any, DetailPageState> {
     private store: Store = new Store();
     private backlogRepo: BacklogRepository = new BacklogRepository();
     private backlogService: BacklogService = new BacklogService(this.backlogRepo, this.store);
+    private ptUserService: PtUserService = new PtUserService(this.store);
 
     private itemId = 0;
+    private users$: Observable<PtUser[]> = this.store.select<PtUser[]>('users');
 
     constructor(props: any) {
         super(props);
@@ -70,14 +74,18 @@ export class DetailPage extends React.Component<any, DetailPageState> {
             });
     }
 
+    public onUsersRequested() {
+        this.ptUserService.fetchUsers();
+    }
+
     private screenRender(screen: DetailScreenType, item: PtItem) {
         switch (screen) {
             case 'details':
-                return <PtItemDetailsComponent item={item} itemSaved={(item) => this.onItemSaved(item)} />;
+                return <PtItemDetailsComponent item={item} users$={this.users$} usersRequested={() => this.onUsersRequested()} itemSaved={(item) => this.onItemSaved(item)} />;
             case 'tasks':
                 return <PtItemTasksComponent item={item} />;
             default:
-                return <PtItemDetailsComponent item={item} itemSaved={(item) => this.onItemSaved(item)} />;
+                return <PtItemDetailsComponent item={item} users$={this.users$} usersRequested={() => this.onUsersRequested()} itemSaved={(item) => this.onItemSaved(item)} />;
         }
     }
 
