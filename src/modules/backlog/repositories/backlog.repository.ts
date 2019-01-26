@@ -108,43 +108,43 @@ export class BacklogRepository {
         )
             .subscribe(successHandler);
     }
- 
+ */
+
     public insertPtTask(
         task: PtTask,
-        ptItemId: number,
-        successHandler: (nextTask: PtTask) => void
-    ) {
-        this.http.post<PtTask>(
-            this.postPtTaskUrl(),
-            { task: task, itemId: ptItemId }
-        )
-            .subscribe(successHandler);
+        ptItemId: number
+    ): Promise<PtTask> {
+        return fetch(this.postPtTaskUrl(), {
+            method: 'POST',
+            body: JSON.stringify({ task: task, itemId: ptItemId }),
+            headers: this.getJSONHeader()
+        })
+            .then(response => response.json());
     }
- 
+
     public updatePtTask(
         task: PtTask,
-        ptItemId: number,
-        successHandler: (updatedTask: PtTask) => void
-    ) {
-        this.http.put<PtTask>(
-            this.putPtTaskUrl(task.id),
-            { task: task, itemId: ptItemId }
-        )
-            .subscribe(successHandler);
+        ptItemId: number
+    ): Promise<PtTask> {
+        return fetch(this.putPtTaskUrl(task.id), {
+            method: 'PUT',
+            body: JSON.stringify({ task: task, itemId: ptItemId }),
+            headers: this.getJSONHeader()
+        })
+            .then(response => response.json());
     }
- 
+
     public deletePtTask(
         task: PtTask,
-        ptItemId: number,
-        successHandler: (ok: boolean) => void
-    ) {
-        this.http.post<boolean>(
-            this.deletePtTaskUrl(ptItemId, task.id),
-            {}
-        )
-            .subscribe(successHandler);
+        ptItemId: number
+    ): Promise<boolean> {
+        return fetch(this.deletePtTaskUrl(ptItemId, task.id), {
+            method: 'POST'
+        })
+            .then(response => response.json());
     }
- 
+
+    /*
     public insertPtComment(
         comment: PtComment,
         ptItemId: number,

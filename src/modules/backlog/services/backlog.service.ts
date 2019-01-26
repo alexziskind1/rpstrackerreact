@@ -12,6 +12,7 @@ import { CONFIG } from '../../../config';
 import { PresetType } from '../../../core/models/domain/types';
 import { datesForTask, datesForPtItem } from '../../../core/helpers/date-utils';
 import { PtNewItem } from '../../../shared/models/dto/pt-new-item';
+import { PtNewTask } from '../../../shared/models/dto/pt-new-task';
 
 
 export const tempCurrentUser = {
@@ -132,6 +133,7 @@ export class BacklogService {
             }
         );
     }
+*/
 
     public addNewPtTask(newTask: PtNewTask, currentItem: PtItem): Promise<PtTask> {
         const task: PtTask = {
@@ -146,18 +148,17 @@ export class BacklogService {
         return new Promise<PtTask>((resolve, reject) => {
             this.repo.insertPtTask(
                 task,
-                currentItem.id,
-                (nextTask: PtTask) => {
+                currentItem.id)
+                .then((nextTask: PtTask) => {
                     datesForTask(nextTask);
                     resolve(nextTask);
                 }
-            );
+                );
         });
     }
 
 
     public updatePtTask(currentItem: PtItem, task: PtTask, toggle: boolean, newTitle?: string): Promise<PtTask> {
-
         const taskToUpdate: PtTask = {
             id: task.id,
             title: newTitle ? newTitle : task.title,
@@ -167,22 +168,22 @@ export class BacklogService {
             dateStart: task.dateStart ? task.dateStart : undefined,
             dateEnd: task.dateEnd ? task.dateEnd : undefined
         };
-
         return new Promise<PtTask>((resolve, reject) => {
-            this.repo.updatePtTask(taskToUpdate, currentItem.id,
-                (updatedTask: PtTask) => {
+            this.repo.updatePtTask(
+                taskToUpdate,
+                currentItem.id)
+                .then((updatedTask: PtTask) => {
                     datesForTask(updatedTask);
                     resolve(updatedTask);
                 }
-            );
+                );
         });
     }
 
     public deletePtTask(currentItem: PtItem, task: PtTask): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            this.repo.deletePtTask(task, currentItem.id,
-                (ok: boolean) => {
-
+            this.repo.deletePtTask(task, currentItem.id)
+                .then((ok: boolean) => {
                     const updatedTasks = currentItem.tasks.filter(t => {
                         if (t.id !== task.id) {
                             return t;
@@ -191,10 +192,11 @@ export class BacklogService {
                     currentItem.tasks = updatedTasks;
                     resolve(ok);
                 }
-            );
+                );
         });
     }
 
+    /*
     public addNewPtComment(newComment: PtNewComment, currentItem: PtItem): Promise<PtComment> {
         const comment: PtComment = {
             id: 0,

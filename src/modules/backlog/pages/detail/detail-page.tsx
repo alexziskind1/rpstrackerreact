@@ -1,6 +1,6 @@
 import React from "react";
 
-import { PtItem, PtUser } from "../../../../core/models/domain";
+import { PtItem, PtUser, PtTask } from "../../../../core/models/domain";
 import { DetailScreenType } from "../../../../shared/models/ui/types/detail-screens";
 import { Store } from "../../../../core/state/app-store";
 import { BacklogRepository } from "../../repositories/backlog.repository";
@@ -9,7 +9,9 @@ import { PtItemDetailsComponent } from "../../components/item-details/pt-item-de
 import { PtItemTasksComponent } from "../../components/item-tasks/pt-item-tasks";
 import { debug } from "util";
 import { PtUserService } from "../../../../core/services/pt-user-service";
-import { Observable } from "rxjs";
+import { Observable, BehaviorSubject } from "rxjs";
+import { PtNewTask } from "../../../../shared/models/dto/pt-new-task";
+import { PtTaskUpdate } from "../../../../shared/models/dto/pt-task-update";
 
 interface DetailPageState {
     item: PtItem | undefined;
@@ -25,6 +27,7 @@ export class DetailPage extends React.Component<any, DetailPageState> {
 
     private itemId = 0;
     private users$: Observable<PtUser[]> = this.store.select<PtUser[]>('users');
+    public tasks$: BehaviorSubject<PtTask[]> = new BehaviorSubject<PtTask[]>([]);
 
     constructor(props: any) {
         super(props);
@@ -52,8 +55,7 @@ export class DetailPage extends React.Component<any, DetailPageState> {
                 this.setState({
                     item: item
                 });
-
-                // this.tasks$.next(item.tasks);
+                this.tasks$.next(item.tasks);
                 // this.comments$.next(item.comments);
             });
     }
@@ -74,6 +76,42 @@ export class DetailPage extends React.Component<any, DetailPageState> {
             });
     }
 
+    public onAddNewTask(newTask: PtNewTask) {
+        if (this.state.item) {
+            this.backlogService.addNewPtTask(newTask, this.state.item).then(nextTask => {
+                this.tasks$.next([nextTask].concat(this.tasks$.value));
+            });
+        }
+    }
+
+    public onUpdateTask(taskUpdate: PtTaskUpdate) {
+        if (this.state.item) {
+            if (taskUpdate.delete) {
+                this.backlogService.deletePtTask(this.state.item, taskUpdate.task).then(ok => {
+                    if (ok) {
+                        const newTasks = this.tasks$.value.filter(task => {
+                            if (task.id !== taskUpdate.task.id) {
+                                return task;
+                            }
+                        });
+                        this.tasks$.next(newTasks);
+                    }
+                });
+            } else {
+                this.backlogService.updatePtTask(this.state.item, taskUpdate.task, taskUpdate.toggle, taskUpdate.newTitle).then(updatedTask => {
+                    const newTasks = this.tasks$.value.map(task => {
+                        if (task.id === updatedTask.id) {
+                            return updatedTask;
+                        } else {
+                            return task;
+                        }
+                    });
+                    this.tasks$.next(newTasks);
+                });
+            }
+        }
+    }
+
     public onUsersRequested() {
         this.ptUserService.fetchUsers();
     }
@@ -83,7 +121,7 @@ export class DetailPage extends React.Component<any, DetailPageState> {
             case 'details':
                 return <PtItemDetailsComponent item={item} users$={this.users$} usersRequested={() => this.onUsersRequested()} itemSaved={(item) => this.onItemSaved(item)} />;
             case 'tasks':
-                return <PtItemTasksComponent item={item} />;
+                return <PtItemTasksComponent tasks$={this.tasks$} addNewTask={(newTask) => this.onAddNewTask(newTask)} updateTask={(taskUpdate) => this.onUpdateTask(taskUpdate)} />;
             default:
                 return <PtItemDetailsComponent item={item} users$={this.users$} usersRequested={() => this.onUsersRequested()} itemSaved={(item) => this.onItemSaved(item)} />;
         }
