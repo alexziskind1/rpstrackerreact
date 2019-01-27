@@ -33,6 +33,15 @@ export class DetailPage extends React.Component<any, DetailPageState> {
     public comments$: BehaviorSubject<PtComment[]> = new BehaviorSubject<PtComment[]>([]);
     public currentUser: PtUser | undefined;
 
+    private screenPositionMap: { [key in DetailScreenType | number]: number | DetailScreenType } = {
+        0: 'details',
+        1: 'tasks',
+        2: 'chitchat',
+        'details': 0,
+        'tasks': 1,
+        'chitchat': 2
+    };
+
     constructor(props: any) {
         super(props);
 
