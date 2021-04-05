@@ -7,7 +7,7 @@ import { BacklogRepository } from "../../repositories/backlog.repository";
 import { BacklogService } from "../../services/backlog.service";
 import { PtItemDetailsComponent } from "../../components/item-details/pt-item-details";
 import { PtItemTasksComponent } from "../../components/item-tasks/pt-item-tasks";
-import { debug } from "util";
+// import { debug } from "util";
 import { PtUserService } from "../../../../core/services/pt-user-service";
 import { Observable, BehaviorSubject } from "rxjs";
 import { PtNewTask } from "../../../../shared/models/dto/pt-new-task";
