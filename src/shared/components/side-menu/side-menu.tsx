@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export const SideMenu: React.SFC<any> = () => {
+export function SideMenu() {
     return (
         <nav className="col-md-2 d-none d-md-block bg-light sidebar">
             <div className="sidebar-sticky">

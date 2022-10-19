@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
 import './App.css';
 
@@ -10,8 +10,7 @@ import { SideMenu } from './shared/components/side-menu/side-menu';
 import { DetailPage } from './modules/backlog/pages/detail/detail-page';
 
 
-class App extends Component {
-  render() {
+function App() {
     return (
       <BrowserRouter>
         <React.Fragment>
@@ -22,7 +21,7 @@ class App extends Component {
               <SideMenu></SideMenu>
 
               <main role="main" className="col-md-9 ml-sm-auto col-lg-10 px-4">
-                <Switch>
+              <Switch>
                   <Route exact path="/">
                     <Redirect exact to={{ pathname: "/dashboard" }} />
                   </Route>
@@ -48,7 +47,6 @@ class App extends Component {
         </React.Fragment>
       </BrowserRouter>
     );
-  }
 }
 
 export default App;

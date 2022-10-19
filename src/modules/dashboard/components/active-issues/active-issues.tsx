@@ -6,8 +6,7 @@ interface WelcomeProps {
     statusCounts: StatusCounts
 }
 
-export const ActiveIssuesComponent: React.SFC<WelcomeProps> = (props) => {
-
+export function ActiveIssuesComponent(props: WelcomeProps) {
     if (!props.statusCounts) {
         return (
             <div className="card">
