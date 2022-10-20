@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BacklogService } from "../../services/backlog.service";
 import { BacklogRepository } from "../../repositories/backlog.repository";
 import { Store } from "../../../../core/state/app-store";
@@ -9,19 +9,12 @@ import { ItemType } from "../../../../core/constants";
 import './backlog-page.css';
 
 import { AppPresetFilter } from "../../../../shared/components/preset-filter/preset-filter";
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
+import { Modal, ModalBody, ModalFooter, Button } from "reactstrap";
 import { PtNewItem } from "../../../../shared/models/dto/pt-new-item";
 import { EMPTY_STRING } from "../../../../core/helpers";
 import { getIndicatorClass } from "../../../../shared/helpers/priority-styling";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 
-
-interface BacklogPageState {
-    currentPreset: PresetType;
-    items: PtItem[];
-    showAddModal: boolean;
-    newItem: PtNewItem;
-}
 
 const initModalNewItem = (): PtNewItem =>  {
     return {
@@ -36,24 +29,22 @@ const backlogRepo: BacklogRepository = new BacklogRepository();
 const backlogService: BacklogService = new BacklogService(backlogRepo, store);
 
 
-export function BacklogPage(props: any) {
+export function BacklogPage() {
 
     const history = useHistory();
 
-
     const itemTypesProvider = ItemType.List.map((t) => t.PtItemType);
-    const { preset } = props.match.params;
+    const { preset } = useParams() as {preset: PresetType};
     const [currentPreset, setCurrentPreset] = useState<PresetType>(preset ? preset : 'open');
 
     useEffect(()=>{
         refresh();
+        history.push(`/backlog/${[currentPreset]}`);
     }, [currentPreset]);
 
     const [items, setItems] = useState<PtItem[]>([]);
     const [showAddModal, setShowAddModal] = useState(false);
-
     const [newItem, setNewItem] = useState(initModalNewItem());
-
 
     function getIndicatorImage(item: PtItem) {
         return ItemType.imageResFromType(item.type);
@@ -66,7 +57,6 @@ export function BacklogPage(props: any) {
 
     function onSelectPresetTap(preset: PresetType) {
         setCurrentPreset(preset);
-        history.push(`/backlog/${[preset]}`);
     }
 
     function refresh() {
@@ -137,7 +127,7 @@ export function BacklogPage(props: any) {
             <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
                 <h1 className="h2">Backlog</h1>
                 <div className="btn-toolbar mb-2 mb-md-0">
-                    <AppPresetFilter selectedPreset={currentPreset} onSelectPresetTap={(p) => onSelectPresetTap(p)} />
+                    <AppPresetFilter selectedPreset={currentPreset} onSelectPresetTap={onSelectPresetTap} />
 
                     <div className="btn-group mr-2">
                         <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => toggleModal()}>Add</button>
@@ -164,7 +154,7 @@ export function BacklogPage(props: any) {
                 </table>
             </div>
 
-            <Modal isOpen={showAddModal} toggle={() => toggleModal()} className={props.className}>
+            <Modal isOpen={showAddModal} toggle={() => toggleModal()}>
                 <div className="modal-header">
                     <h4 className="modal-title" id="modal-basic-title">Add New Item</h4>
                     <button type="button" className="close" onClick={() => toggleModal()} aria-label="Close">
