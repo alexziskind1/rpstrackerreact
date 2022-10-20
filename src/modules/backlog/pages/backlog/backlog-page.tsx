@@ -130,7 +130,7 @@ export function BacklogPage() {
                     <AppPresetFilter selectedPreset={currentPreset} onSelectPresetTap={onSelectPresetTap} />
 
                     <div className="btn-group mr-2">
-                        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => toggleModal()}>Add</button>
+                        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={toggleModal}>Add</button>
                     </div>
                 </div>
             </div>
@@ -154,10 +154,10 @@ export function BacklogPage() {
                 </table>
             </div>
 
-            <Modal isOpen={showAddModal} toggle={() => toggleModal()}>
+            <Modal isOpen={showAddModal} toggle={toggleModal}>
                 <div className="modal-header">
                     <h4 className="modal-title" id="modal-basic-title">Add New Item</h4>
-                    <button type="button" className="close" onClick={() => toggleModal()} aria-label="Close">
+                    <button type="button" className="close" onClick={toggleModal} aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -197,8 +197,8 @@ export function BacklogPage() {
                     </form >
                 </ModalBody >
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => toggleModal()}>Cancel</Button>
-                    <Button color="primary" onClick={() => onAddSave()}>Save</Button>{' '}
+                    <Button color="secondary" onClick={toggleModal}>Cancel</Button>
+                    <Button color="primary" onClick={onAddSave}>Save</Button>{' '}
 
                 </ModalFooter>
             </Modal >
