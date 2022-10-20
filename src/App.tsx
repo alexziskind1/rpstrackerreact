@@ -8,10 +8,14 @@ import { DashboardPage } from './modules/dashboard/pages/dashboard/dashboard-pag
 import { MainMenu } from './shared/components/main-menu/main-menu';
 import { SideMenu } from './shared/components/side-menu/side-menu';
 import { DetailPage } from './modules/backlog/pages/detail/detail-page';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ThePage } from './modules/backlog/pages/tasks/the-page';
 
+const queryClient = new QueryClient();
 
 function App() {
     return (
+      <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <React.Fragment>
           <MainMenu />
@@ -25,6 +29,7 @@ function App() {
                   <Route exact path="/">
                     <Redirect exact to={{ pathname: "/dashboard" }} />
                   </Route>
+                  <Route exact path="/page" component={ThePage} />
                   <Route exact path="/dashboard" component={DashboardPage} />
                   <Route exact path="/backlog">
                     <Redirect exact to={{ pathname: "/backlog/open" }} />
@@ -46,6 +51,7 @@ function App() {
           </div>
         </React.Fragment>
       </BrowserRouter>
+      </QueryClientProvider>
     );
 }
 

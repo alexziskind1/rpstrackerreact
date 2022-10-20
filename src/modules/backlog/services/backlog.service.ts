@@ -77,6 +77,7 @@ export class BacklogService {
 
 
     public getPtItem(id: number): Promise<PtItem> {
+        console.log('backlogService getPtItem called ');
         return this.repo.getPtItem(id)
             .then((ptItem: PtItem) => {
                 datesForPtItem(ptItem);
