@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PtComment, PtUser } from "../../../../core/models/domain";
 import { EMPTY_STRING } from "../../../../core/helpers";
 import { BehaviorSubject } from "rxjs";
@@ -7,91 +7,79 @@ import { PtNewComment } from "../../../../shared/models/dto/pt-new-comment";
 import './pt-item-chitchat.css';
 
 interface PtItemChitchatComponentProps {
-    comments$: BehaviorSubject<PtComment[]>;
+    //comments$: BehaviorSubject<PtComment[]>;
+    comments: PtComment[];
     currentUser: PtUser;
     addNewComment: (newComment: PtNewComment) => void;
 }
 
-interface PtItemChitchatComponentState {
-    newCommentText: string;
-    comments: PtComment[];
-}
+export function PtItemChitchatComponent(props: PtItemChitchatComponentProps) {
 
-export class PtItemChitchatComponent extends React.Component<PtItemChitchatComponentProps, PtItemChitchatComponentState> {
+    const [newCommentText, setNewCommentText] = useState(EMPTY_STRING);
+    const [comments, setComments] = useState<PtComment[]>(props.comments);
+    useEffect(()=>{
+        debugger;
+    }, [comments]);
 
-    constructor(props: PtItemChitchatComponentProps) {
-        super(props);
-        this.state = {
-            newCommentText: EMPTY_STRING,
-            comments: []
-        };
+    //function componentDidMount() {
+    //props.comments$.subscribe((comments: PtComment[]) => {
+    //    setComments(comments);
+    //});
+    //}
+
+    function onNewCommentChanged(e: any) {
+        setNewCommentText(e.target.value);
     }
 
-    public componentDidMount() {
-        this.props.comments$.subscribe((comments: PtComment[]) => {
-            this.setState({
-                comments: comments
-            });
-        });
-    }
-
-    public onNewCommentChanged(e: any) {
-        this.setState({
-            newCommentText: e.target.value
-        });
-    }
-
-    public onAddTapped() {
-        const newTitle = this.state.newCommentText.trim();
+    function onAddTapped() {
+        debugger;
+        const newTitle = newCommentText.trim();
         if (newTitle.length === 0) {
             return;
         }
         const newComment: PtNewComment = {
             title: newTitle
         };
-        this.props.addNewComment(newComment);
+        props.addNewComment(newComment);
 
-        this.setState({
-            newCommentText: EMPTY_STRING
-        });
+        setNewCommentText(EMPTY_STRING);
     }
 
-    public render() {
-        return (
-            <React.Fragment>
-                <form>
-                    <div className="form-row align-items-center">
+    return (
+        <React.Fragment>
+            <form>
+                <div className="form-row align-items-center">
 
-                        <img src={this.props.currentUser.avatar} className="mr-3 li-avatar rounded" />
+                    <img src={props.currentUser.avatar} className="mr-3 li-avatar rounded" />
 
-                        <div className="col-sm-6">
-                            <textarea defaultValue={this.state.newCommentText} onChange={(e) => this.onNewCommentChanged(e)} placeholder="Enter new comment..." className="form-control pt-text-comment-add"
-                                name="newComment"></textarea>
-                        </div>
-                        <button type="button" onClick={() => this.onAddTapped()} className="btn btn-primary" disabled={!this.state.newCommentText}>Add</button>
+                    <div className="col-sm-6">
+                        <textarea defaultValue={newCommentText} onChange={(e) => onNewCommentChanged(e)} placeholder="Enter new comment..." className="form-control pt-text-comment-add"
+                            name="newComment"></textarea>
                     </div>
-                </form >
+                    <button type="button" onClick={() => onAddTapped()} className="btn btn-primary" disabled={!newCommentText}>Add</button>
+                </div>
+            </form >
 
-                <hr />
+            <hr />
 
-                <ul className="list-unstyled">
-                    {
-                        this.state.comments.map(comment => {
-                            return (
-                                <li key={comment.id} className="media chitchat-item">
-                                    <img src={comment.user!.avatar} className="mr-3 li-avatar rounded" />
-                                    <div className="media-body">
-                                        <h6 className="mt-0 mb-1"><span>{comment.user!.fullName}</span><span className="li-date">{comment.dateCreated.toString()}</span></h6>
+            <ul className="list-unstyled">
+                {
+                    comments.map(comment => {
+                        return (
+                            <li key={comment.id} className="media chitchat-item">
+                                <img src={comment.user!.avatar} className="mr-3 li-avatar rounded" />
+                                <div className="media-body">
+                                    <h6 className="mt-0 mb-1"><span>{comment.user!.fullName}</span><span className="li-date">{comment.dateCreated.toString()}</span></h6>
 
-                                        <span className="chitchat-text ">{comment.title}</span>
+                                    <span className="chitchat-text ">{comment.title}</span>
 
-                                    </div>
-                                </li>
-                            );
-                        })
-                    }
-                </ul>
-            </React.Fragment >
-        );
-    }
+                                </div>
+                            </li>
+                        );
+                    })
+                }
+            </ul>
+        </React.Fragment >
+    );
+   
 }
