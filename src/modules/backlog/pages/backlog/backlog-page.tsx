@@ -14,6 +14,7 @@ import { PtNewItem } from "../../../../shared/models/dto/pt-new-item";
 import { EMPTY_STRING } from "../../../../core/helpers";
 import { getIndicatorClass } from "../../../../shared/helpers/priority-styling";
 import { useHistory, useParams } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 
 const initModalNewItem = (): PtNewItem =>  {
@@ -28,21 +29,38 @@ const store: Store = new Store();
 const backlogRepo: BacklogRepository = new BacklogRepository();
 const backlogService: BacklogService = new BacklogService(backlogRepo, store);
 
+type GetPtItemsParams = Parameters<typeof backlogService.getItems>;
 
 export function BacklogPage() {
 
     const history = useHistory();
+    const queryClient = useQueryClient();
 
     const itemTypesProvider = ItemType.List.map((t) => t.PtItemType);
     const { preset } = useParams() as {preset: PresetType};
     const [currentPreset, setCurrentPreset] = useState<PresetType>(preset ? preset : 'open');
 
-    useEffect(()=>{
-        refresh();
-        history.push(`/backlog/${[currentPreset]}`);
-    }, [currentPreset]);
+    const useItems = (...params: GetPtItemsParams) => {
+        return useQuery<PtItem[], Error>(getQueryKey(), () => backlogService.getItems(...params));
+    }
+    const queryResult = useItems(currentPreset);
+    const items = queryResult.data;
 
-    const [items, setItems] = useState<PtItem[]>([]);
+    function getQueryKey() {
+        return ['items', currentPreset];
+    }
+
+    const addItemMutation = useMutation(async (newItem: PtNewItem) => {
+        if (store.value.currentUser) {
+            const createdItem = await backlogService.addNewPtItem(newItem, store.value.currentUser);
+            return createdItem;
+        }
+    });
+    
+    useEffect(()=>{
+        history.push(`/backlog/${[currentPreset]}`);
+    },[currentPreset]);
+    
     const [showAddModal, setShowAddModal] = useState(false);
     const [newItem, setNewItem] = useState(initModalNewItem());
 
@@ -59,18 +77,10 @@ export function BacklogPage() {
         setCurrentPreset(preset);
     }
 
-    function refresh() {
-        backlogService.getItems(currentPreset)
-            .then(ptItems => {
-                setItems(ptItems);
-            });
-    }
-
     function listItemTap(item: PtItem) {
         // navigate to detail page
         history.push(`/detail/${item.id}`);
     }
-
 
     function toggleModal() {
         setShowAddModal(!showAddModal);
@@ -84,16 +94,30 @@ export function BacklogPage() {
     }
 
     function onAddSave() {
-        if (store.value.currentUser) {
-            backlogService.addNewPtItem(newItem, store.value.currentUser)
-                .then((nextItem: PtItem) => {
-                    setShowAddModal(false);
-                    setNewItem(initModalNewItem());
-                    setItems([nextItem, ...items]);
-
-                });
-        }
+        addItemMutation.mutate(newItem, {
+            onSuccess(createdItem, variables, context) {
+                console.log('added item');
+                setShowAddModal(false);
+                setNewItem(initModalNewItem());
+                queryClient.invalidateQueries(getQueryKey());
+            },
+        });
     }
+
+    if (queryResult.isLoading) {
+        return (
+            <div>
+                Loading...
+            </div>
+        );
+    }
+    
+   if (!items) {
+    return (
+        <div>no items</div>
+    );
+   }
+
 
     const rows = items.map(i => {
         return (
@@ -121,6 +145,8 @@ export function BacklogPage() {
             </tr>
         );
     });
+
+
 
     return (
         <React.Fragment>
