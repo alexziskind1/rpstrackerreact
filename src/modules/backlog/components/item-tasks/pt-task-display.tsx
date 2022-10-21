@@ -7,8 +7,6 @@ export type PtTaskDisplayComponentProps = {
     onTaskFocused: (task: PtTask) => void;
     onTaskBlurred: (task: PtTask) => void;
     taskTitleChange: (task: PtTask, newTitle: string) => void;
-    //completeTaskMutation: MutationFunction<PtTask, PtTask>;
-    //deleteTaskMutation: MutationFunction<boolean, PtTask>;
 };
 
 export function PtTaskDisplayComponent(props: PtTaskDisplayComponentProps) {

@@ -18,7 +18,7 @@ export function PtItemChitchatComponent(props: PtItemChitchatComponentProps) {
     const [newCommentText, setNewCommentText] = useState(EMPTY_STRING);
     const [comments, setComments] = useState<PtComment[]>(props.comments);
     useEffect(()=>{
-        debugger;
+       
     }, [comments]);
 
     //function componentDidMount() {

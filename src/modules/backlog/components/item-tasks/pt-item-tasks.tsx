@@ -13,9 +13,6 @@ export type PtItemTasksComponentProps = {
     deleteTaskMutation: UseMutationResult<boolean, unknown, PtTask, unknown>;
     toggleTaskCompletionMutation: UseMutationResult<PtTask, unknown, PtTask, unknown>;
     updateTaskMutation: UseMutationResult<PtTask, unknown, PtTaskUpdate, unknown>;
-    
-    //addNewTask: (newTask: PtNewTask) => void;
-    //updateTask: (taskUpdate: PtTaskUpdate) => void;
 };
 
 export function PtItemTasksComponent(props: PtItemTasksComponentProps) {
@@ -85,16 +82,8 @@ export function PtItemTasksComponent(props: PtItemTasksComponentProps) {
             return;
         }
         updateTask(task);
-        /*
-        const taskUpdate: PtTaskUpdate = {
-            task: task,
-            toggle: false,
-            newTitle: lastUpdatedTitle
-        };
-        */
 
         setLastUpdatedTitle(EMPTY_STRING);
-       // props.updateTask(taskUpdate);
     }
 
     const removeTask = (index: number) => {

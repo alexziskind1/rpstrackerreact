@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { PtItem, PtUser, PtTask, PtComment } from "../../../../core/models/domain";
 import { DetailScreenType } from "../../../../shared/models/ui/types/detail-screens";
@@ -7,9 +7,9 @@ import { BacklogRepository } from "../../repositories/backlog.repository";
 import { BacklogService } from "../../services/backlog.service";
 import { PtItemDetailsComponent } from "../../components/item-details/pt-item-details";
 import { PtItemTasksComponent } from "../../components/item-tasks/pt-item-tasks";
-// import { debug } from "util";
+
 import { PtUserService } from "../../../../core/services/pt-user-service";
-import { Observable, BehaviorSubject } from "rxjs";
+import { Observable } from "rxjs";
 import { PtNewTask } from "../../../../shared/models/dto/pt-new-task";
 import { PtTaskUpdate } from "../../../../shared/models/dto/pt-task-update";
 import { PtItemChitchatComponent } from "../../components/item-chitchat/pt-item-chitchat";
@@ -17,19 +17,6 @@ import { PtNewComment } from "../../../../shared/models/dto/pt-new-comment";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useHistory, useParams } from "react-router-dom";
 
-interface DetailPageState {
-    item: PtItem | undefined;
-    selectedDetailsScreen: DetailScreenType;
-}
-
-const screenPositionMap: { [key in DetailScreenType | number]: number | DetailScreenType } = {
-    0: 'details',
-    1: 'tasks',
-    2: 'chitchat',
-    'details': 0,
-    'tasks': 1,
-    'chitchat': 2
-};
 
 const store: Store = new Store();
 const backlogRepo: BacklogRepository = new BacklogRepository();
@@ -39,8 +26,7 @@ const ptUserService: PtUserService = new PtUserService(store);
 type GetPtItemParams = Parameters<typeof backlogService.getPtItem>;
 const queryTag = 'item';
 
-export function DetailPage(props: any) {
-
+export function DetailPage() {
 
     const currentUser = store.value.currentUser;
     const users$: Observable<PtUser[]> = store.select<PtUser[]>('users');
@@ -87,52 +73,7 @@ export function DetailPage(props: any) {
         return ok;
     });
 
-    /*
-    useEffect(()=>{
-        debugger;
-        refresh();
-    }, [item]);
-    */
-
-    /*
-    constructor(props: any) {
-        super(props);
-
-        const { id, screen } = props.match.params;
-        itemId = id;
-        currentUser = store.value.currentUser;
-
-        state = {
-            item: undefined,
-            selectedDetailsScreen: screen ? screen : 'details'
-        };
-    }
-    */
-
-    function componentDidMount() {
-        //refresh();
-    }
-
-    /*
-    function refresh() {
-        backlogService.getPtItem(itemId)
-            .then(item => {
-                setItem(item);
-                setTasks(item.tasks);
-                setComments(item.comments);
-                //setState({
-                //    item: item
-                //});
-                //tasks$.next(item.tasks);
-                //comments$.next(item.comments);
-            });
-    }
-    */
-
     function onScreenSelected(screen: DetailScreenType) {
-        /*setState({
-            selectedDetailsScreen: screen
-        });*/
         setSelectedDetailsScreen(screen);
         history.push(`/detail/${itemId}/${screen}`);
     }
@@ -144,49 +85,6 @@ export function DetailPage(props: any) {
             }
         });
     }
-
-    function onAddNewTask(newTask: PtNewTask) {
-        if (item) {
-            backlogService.addNewPtTask(newTask, item).then(nextTask => {
-                //tasks$.next([nextTask].concat(tasks$.value));
-                setTasks([nextTask].concat(tasks))
-            });
-        }
-    }
-
-    function onUpdateTask(taskUpdate: PtTaskUpdate) {
-        if (item) {
-            if (taskUpdate.delete) {
-                backlogService.deletePtTask(item, taskUpdate.task).then(ok => {
-                    if (ok) {
-                        const newTasks = tasks.filter(task => {
-                            if (task.id !== taskUpdate.task.id) {
-                                return task;
-                            }
-                        });
-                        //tasks$.next(newTasks);
-                        setTasks(newTasks);
-                    }
-                });
-            } else {
-                backlogService.updatePtTask(item, taskUpdate.task, taskUpdate.toggle, taskUpdate.newTitle).then(updatedTask => {
-                    const newTasks = tasks.map(task => {
-                        if (task.id === updatedTask.id) {
-                            return updatedTask;
-                        } else {
-                            return task;
-                        }
-                    });
-                    //tasks$.next(newTasks);
-                    setTasks(newTasks);
-                });
-            }
-        }
-    }
-
-
-
-
 
     function onAddNewComment(newComment: PtNewComment) {
         if (item) {
@@ -212,8 +110,6 @@ export function DetailPage(props: any) {
                     deleteTaskMutation={deleteTaskMutation}
                     toggleTaskCompletionMutation={toggleTaskCompletionMutation}
                     updateTaskMutation={updateTaskMutation}
-                    //addNewTask={(newTask) => onAddNewTask(newTask)} 
-                    //updateTask={(taskUpdate) => onUpdateTask(taskUpdate)} 
                     />;
             case 'chitchat':
                 return <PtItemChitchatComponent comments={comments} currentUser={currentUser!} addNewComment={(newComment) => onAddNewComment(newComment)} />;
