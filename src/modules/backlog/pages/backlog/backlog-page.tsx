@@ -15,15 +15,10 @@ import { EMPTY_STRING } from "../../../../core/helpers";
 import { getIndicatorClass } from "../../../../shared/helpers/priority-styling";
 import { useHistory, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import { AddItemModal } from "../../components/add-item-modal/add-item-modal";
 
 
-const initModalNewItem = (): PtNewItem =>  {
-    return {
-        title: EMPTY_STRING,
-        description: EMPTY_STRING,
-        typeStr: 'PBI'
-    };
-}
+
 
 const store: Store = new Store();
 const backlogRepo: BacklogRepository = new BacklogRepository();
@@ -33,10 +28,9 @@ type GetPtItemsParams = Parameters<typeof backlogService.getItems>;
 
 export function BacklogPage() {
 
-    const history = useHistory();
     const queryClient = useQueryClient();
-
-    const itemTypesProvider = ItemType.List.map((t) => t.PtItemType);
+    const history = useHistory();
+    
     const { preset } = useParams() as {preset: PresetType};
     const [currentPreset, setCurrentPreset] = useState<PresetType>(preset ? preset : 'open');
 
@@ -61,8 +55,8 @@ export function BacklogPage() {
         history.push(`/backlog/${[currentPreset]}`);
     },[currentPreset]);
     
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [newItem, setNewItem] = useState(initModalNewItem());
+    const [isAddModalShowing, setIsAddModalShowing] = useState(false);
+
 
     function getIndicatorImage(item: PtItem) {
         return ItemType.imageResFromType(item.type);
@@ -83,26 +77,17 @@ export function BacklogPage() {
     }
 
     function toggleModal() {
-        setShowAddModal(!showAddModal);
+        setIsAddModalShowing(!isAddModalShowing);
     }
 
-    function onFieldChange(e: any, formFieldName: string) {
-        if (!newItem) {
-            return;
-        }
-        setNewItem({ ...newItem, [formFieldName]: e.target.value });
-    }
-
-    function onAddSave() {
-        addItemMutation.mutate(newItem, {
+    function onNewItemSave(newItem: PtNewItem) {
+        return addItemMutation.mutateAsync(newItem, {
             onSuccess(createdItem, variables, context) {
-                console.log('added item');
-                setShowAddModal(false);
-                setNewItem(initModalNewItem());
                 queryClient.invalidateQueries(getQueryKey());
             },
         });
     }
+
 
     if (queryResult.isLoading) {
         return (
@@ -180,58 +165,12 @@ export function BacklogPage() {
                 </table>
             </div>
 
-            <Modal isOpen={showAddModal} toggle={toggleModal}>
-                <div className="modal-header">
-                    <h4 className="modal-title" id="modal-basic-title">Add New Item</h4>
-                    <button type="button" className="close" onClick={toggleModal} aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <ModalBody>
-                    <form>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">Title</label>
-                            <div className="col-sm-10">
-                                <input className="form-control" defaultValue={newItem.title} onChange={(e) => onFieldChange(e, 'title')} name="title" />
-                            </div>
-                        </div>
-
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">Description</label>
-                            <div className="col-sm-10">
-                                <textarea className="form-control" defaultValue={newItem.description} onChange={(e) => onFieldChange(e, 'description')} name="description"></textarea>
-                            </div>
-                        </div>
-
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">Item Type</label>
-                            <div className="col-sm-10">
-                                <select className="form-control" defaultValue={newItem.typeStr} onChange={(e) => onFieldChange(e, 'typeStr')} name="itemType">
-                                    {
-                                        itemTypesProvider.map(t => {
-                                            return (
-                                                <option key={t} value={t}>
-                                                    {t}
-                                                </option>
-                                            )
-                                        })
-                                    }
-                                </select>
-                            </div>
-                        </div>
-
-                    </form >
-                </ModalBody >
-                <ModalFooter>
-                    <Button color="secondary" onClick={toggleModal}>Cancel</Button>
-                    <Button color="primary" onClick={onAddSave}>Save</Button>{' '}
-
-                </ModalFooter>
-            </Modal >
-
-
+            <AddItemModal 
+                onNewItemSave={onNewItemSave} 
+                modalShowing={isAddModalShowing}
+                setIsAddModalShowing={setIsAddModalShowing}
+                />
+                
         </React.Fragment >
-
     );
-    
 }
