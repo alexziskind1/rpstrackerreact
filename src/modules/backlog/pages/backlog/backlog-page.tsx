@@ -4,20 +4,15 @@ import { BacklogRepository } from "../../repositories/backlog.repository";
 import { Store } from "../../../../core/state/app-store";
 import { PresetType } from "../../../../core/models/domain/types";
 import { PtItem } from "../../../../core/models/domain";
-import { ItemType } from "../../../../core/constants";
 
 import './backlog-page.css';
 
 import { AppPresetFilter } from "../../../../shared/components/preset-filter/preset-filter";
-import { Modal, ModalBody, ModalFooter, Button } from "reactstrap";
 import { PtNewItem } from "../../../../shared/models/dto/pt-new-item";
-import { EMPTY_STRING } from "../../../../core/helpers";
-import { getIndicatorClass } from "../../../../shared/helpers/priority-styling";
 import { useHistory, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AddItemModal } from "../../components/add-item-modal/add-item-modal";
-
-
+import { BacklogRow } from "../../components/backlog-row/backlog-row";
 
 
 const store: Store = new Store();
@@ -57,23 +52,8 @@ export function BacklogPage() {
     
     const [isAddModalShowing, setIsAddModalShowing] = useState(false);
 
-
-    function getIndicatorImage(item: PtItem) {
-        return ItemType.imageResFromType(item.type);
-    }
-
-    function getPriorityClass(item: PtItem): string {
-        const indicatorClass = getIndicatorClass(item.priority);
-        return indicatorClass;
-    }
-
     function onSelectPresetTap(preset: PresetType) {
         setCurrentPreset(preset);
-    }
-
-    function listItemTap(item: PtItem) {
-        // navigate to detail page
-        history.push(`/detail/${item.id}`);
     }
 
     function toggleModal() {
@@ -97,41 +77,17 @@ export function BacklogPage() {
         );
     }
     
-   if (!items) {
-    return (
-        <div>no items</div>
-    );
-   }
-
+    if (!items) {
+        return (
+            <div>No items</div>
+        );
+    }
 
     const rows = items.map(i => {
         return (
-            <tr key={i.id} className="pt-table-row" onClick={(e) => listItemTap(i)}>
-                <td>
-                    <img src={getIndicatorImage(i)} className="backlog-icon" />
-                </td>
-                <td>
-                    <img src={i.assignee.avatar} className="li-avatar rounded mx-auto d-block" />
-                </td>
-                <td>
-                    <span className="li-title">{i.title}</span>
-                </td>
-
-                <td>
-                    <span>{i.status}</span>
-                </td>
-
-                <td>
-                    <span className={'badge ' + getPriorityClass(i)}>{i.priority}
-                    </span>
-                </td>
-                <td><span className="li-estimate">{i.estimate}</span></td>
-                <td><span className="li-date">{i.dateCreated.toDateString()}</span></td>
-            </tr>
+            <BacklogRow key={i.id} item={i} />
         );
     });
-
-
 
     return (
         <React.Fragment>
