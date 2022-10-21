@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { PtItem, PtUser } from "../../../../core/models/domain";
 import { PtItemDetailsEditFormModel, ptItemToFormModel } from "../../../../shared/models/forms/pt-item-details-edit-form";
 import { ItemType, PT_ITEM_STATUSES, PT_ITEM_PRIORITIES } from "../../../../core/constants";
-import { Modal, ModalBody, ModalFooter, Button } from "reactstrap";
 import { Observable } from "rxjs";
+import { AssigneeListModal } from "../assignee-list-modal/assignee-list-modal";
 
 interface PtItemDetailsComponentProps {
     item: PtItem;
@@ -14,18 +14,19 @@ interface PtItemDetailsComponentProps {
 
 export function PtItemDetailsComponent(props: PtItemDetailsComponentProps) {
 
+    const statusesProvider = PT_ITEM_STATUSES;
+    const prioritiesProvider = PT_ITEM_PRIORITIES;
+    const itemTypesProvider = ItemType.List.map((t) => t.PtItemType);
+
     const [itemForm, setItemForm] = useState(ptItemToFormModel(props.item));
     const [users, setUsers] = useState<PtUser[]>([]);
-    const [showAddModal, setShowAddModal] = useState(false);
+    const [modalIsShowing, setModalIsShowing] = useState(false);
     const [selectedAssignee, setSelectedAssignee] = useState<PtUser>(props.item.assignee);
     useEffect(()=>{
         notifyUpdateItem();
     }, [selectedAssignee]);
 
-    const itemTypesProvider = ItemType.List.map((t) => t.PtItemType);
-    const statusesProvider = PT_ITEM_STATUSES;
-    const prioritiesProvider = PT_ITEM_PRIORITIES;
-
+    
     function onFieldChange(e: any, formFieldName: string) {
         if (!itemForm) {
             return;
@@ -46,7 +47,6 @@ export function PtItemDetailsComponent(props: PtItemDetailsComponentProps) {
         if (!itemForm) {
             return;
         }
-
         const updatedItem = getUpdatedItem(props.item, itemForm, selectedAssignee!);
         props.itemSaved(updatedItem);
     }
@@ -68,22 +68,17 @@ export function PtItemDetailsComponent(props: PtItemDetailsComponentProps) {
         props.users$.subscribe((users: PtUser[]) => {
             if (users.length > 0) {
                 setUsers(users);
-                setShowAddModal(true);
+                setModalIsShowing(true);
             }
         });
 
         props.usersRequested();
     }
 
-    function toggleModal() {
-        setShowAddModal(!showAddModal);
-        return false;
-    }
-
     function selectAssignee(u: PtUser) {
         setSelectedAssignee(u);
         setItemForm({ ...itemForm, assigneeName: u.fullName });
-        setShowAddModal(false);
+        setModalIsShowing(false);
         notifyUpdateItem();
     }
 
@@ -178,31 +173,12 @@ export function PtItemDetailsComponent(props: PtItemDetailsComponentProps) {
                 </div>
             </form>
 
-            <Modal isOpen={showAddModal} toggle={() => toggleModal()}>
-                <div className="modal-header">
-                    <h4 className="modal-title" id="modal-basic-title">Select Assignee</h4>
-                    <button type="button" className="close" onClick={() => toggleModal()} aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <ModalBody>
-                    <ul className="list-group list-group-flush">
-                        {
-                            users.map((u: PtUser) => {
-                                return (
-                                    <li key={u.id} className="list-group-item d-flex justify-content-between align-items-center" onClick={() => selectAssignee(u)}>
-                                        <span>{u.fullName}</span>
-                                        <span className="badge ">
-                                            <img src={u.avatar} className="li-avatar rounded mx-auto d-block" />
-                                        </span>
-                                    </li>
-                                );
-                            })
-                        }
-                    </ul>
-                </ModalBody >
-                <ModalFooter />
-            </Modal >
+            <AssigneeListModal 
+                users={users} 
+                modalIsShowing={modalIsShowing} 
+                setModalIsShowing={setModalIsShowing} 
+                selectAssignee={selectAssignee} />
+
 
         </React.Fragment>
     );

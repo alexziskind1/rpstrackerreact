@@ -14,6 +14,8 @@ import { PtNewTask } from "../../../../shared/models/dto/pt-new-task";
 import { PtTaskUpdate } from "../../../../shared/models/dto/pt-task-update";
 import { PtItemChitchatComponent } from "../../components/item-chitchat/pt-item-chitchat";
 import { PtNewComment } from "../../../../shared/models/dto/pt-new-comment";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useParams } from "react-router-dom";
 
 interface DetailPageState {
     item: PtItem | undefined;
@@ -29,33 +31,48 @@ const screenPositionMap: { [key in DetailScreenType | number]: number | DetailSc
     'chitchat': 2
 };
 
+const store: Store = new Store();
+const backlogRepo: BacklogRepository = new BacklogRepository();
+const backlogService: BacklogService = new BacklogService(backlogRepo, store);
+const ptUserService: PtUserService = new PtUserService(store);
+
+type GetPtItemParams = Parameters<typeof backlogService.getPtItem>;
+const queryTag = 'item';
+
 export function DetailPage(props: any) {
 
-    const store: Store = new Store();
-    const backlogRepo: BacklogRepository = new BacklogRepository();
-    const backlogService: BacklogService = new BacklogService(backlogRepo, store);
-    const ptUserService: PtUserService = new PtUserService(store);
-
-    const { id, screen } = props.match.params;
-
-    const itemId = id;
-    const users$: Observable<PtUser[]> = store.select<PtUser[]>('users');
-
-    const [item, setItem] = useState<PtItem>();
-    const [selectedDetailsScreen, setSelectedDetailsScreen] = useState<DetailScreenType>(screen ? screen : 'details');
-    const [tasks, setTasks] = useState<PtTask[]>([]);
-    const [comments, setComments] = useState<PtComment[]>([]);
-
-    //const tasks$: BehaviorSubject<PtTask[]> = new BehaviorSubject<PtTask[]>([]);
-    //const comments$: BehaviorSubject<PtComment[]> = new BehaviorSubject<PtComment[]>([]);
 
     const currentUser = store.value.currentUser;
+    const users$: Observable<PtUser[]> = store.select<PtUser[]>('users');
 
+    const { id: itemId, screen } = useParams() as { id: string, screen: DetailScreenType };
+
+    const queryClient = useQueryClient();
+
+    const useItem = (...params: GetPtItemParams) => {
+        return useQuery<PtItem, Error>(queryTag, () => backlogService.getPtItem(...params));
+    }
+    const queryResult = useItem(parseInt(itemId));
+    const item = queryResult.data;
+
+    
+    const [selectedDetailsScreen, setSelectedDetailsScreen] = useState<DetailScreenType>(screen ? screen : 'details');
+    const [tasks, setTasks] = useState<PtTask[]>(item ? item.tasks : []);
+    const [comments, setComments] = useState<PtComment[]>(item ? item.comments : []);
+
+
+    const updateItemMutation = useMutation(async (itemToUpdate: PtItem) => {
+        const updatedItem = await backlogService.updatePtItem(itemToUpdate);
+        return updatedItem;
+    });
+    
+
+    /*
     useEffect(()=>{
         debugger;
         refresh();
     }, [item]);
-
+    */
 
     /*
     constructor(props: any) {
@@ -73,9 +90,10 @@ export function DetailPage(props: any) {
     */
 
     function componentDidMount() {
-        refresh();
+        //refresh();
     }
 
+    /*
     function refresh() {
         backlogService.getPtItem(itemId)
             .then(item => {
@@ -89,6 +107,7 @@ export function DetailPage(props: any) {
                 //comments$.next(item.comments);
             });
     }
+    */
 
     function onScreenSelected(screen: DetailScreenType) {
         /*setState({
@@ -99,15 +118,11 @@ export function DetailPage(props: any) {
     }
 
     function onItemSaved(item: PtItem) {
-        backlogService.updatePtItem(item)
-            .then((updateItem: PtItem) => {
-                setItem(updateItem);
-                /*
-                setState({
-                    item: updateItem
-                });
-                */ 
-            });
+        updateItemMutation.mutate(item, {
+            onSuccess: (updatedItem) => {
+                queryClient.setQueryData(queryTag, updatedItem);
+            }
+        });
     }
 
     function onAddNewTask(newTask: PtNewTask) {
@@ -178,10 +193,14 @@ export function DetailPage(props: any) {
         }
     }
 
+    if (queryResult.isLoading) {
+        return <div>Loading...</div>
+    }
 
     if (!item) {
-        return null;
+        return <div>No item</div>
     }
+    
     return (
 
         <div>
