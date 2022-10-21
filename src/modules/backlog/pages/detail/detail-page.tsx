@@ -15,7 +15,7 @@ import { PtTaskUpdate } from "../../../../shared/models/dto/pt-task-update";
 import { PtItemChitchatComponent } from "../../components/item-chitchat/pt-item-chitchat";
 import { PtNewComment } from "../../../../shared/models/dto/pt-new-comment";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 
 interface DetailPageState {
     item: PtItem | undefined;
@@ -48,6 +48,7 @@ export function DetailPage(props: any) {
     const { id: itemId, screen } = useParams() as { id: string, screen: DetailScreenType };
 
     const queryClient = useQueryClient();
+    const history = useHistory();
 
     const useItem = (...params: GetPtItemParams) => {
         return useQuery<PtItem, Error>(queryTag, () => backlogService.getPtItem(...params));
@@ -66,6 +67,25 @@ export function DetailPage(props: any) {
         return updatedItem;
     });
     
+    useEffect(() => {
+        //debugger;
+        //history.push(`/detail/${itemId}/${screen}`);
+    }, [selectedDetailsScreen]);
+
+    const addTaskMutation = useMutation(async (newTaskItem: PtNewTask) => {
+        const createdTask = await backlogService.addNewPtTask(newTaskItem, item!);
+        return createdTask;
+    });
+
+    const toggleTaskCompletionMutation = useMutation(async (task: PtTask) => {
+        const updatedTask = await backlogService.updatePtTask(item!, task, true);
+        return updatedTask;
+    });
+
+    const deleteTaskMutation = useMutation(async (task: PtTask ) => {
+        const ok = await backlogService.deletePtTask(item!, task);
+        return ok;
+    });
 
     /*
     useEffect(()=>{
@@ -114,7 +134,7 @@ export function DetailPage(props: any) {
             selectedDetailsScreen: screen
         });*/
         setSelectedDetailsScreen(screen);
-        props.history.push(`/detail/${itemId}/${screen}`);
+        history.push(`/detail/${itemId}/${screen}`);
     }
 
     function onItemSaved(item: PtItem) {
@@ -165,6 +185,9 @@ export function DetailPage(props: any) {
     }
 
 
+
+
+
     function onAddNewComment(newComment: PtNewComment) {
         if (item) {
             backlogService.addNewPtComment(newComment, item).then(nextComment => {
@@ -183,8 +206,13 @@ export function DetailPage(props: any) {
             case 'details':
                 return <PtItemDetailsComponent item={item} users$={users$} usersRequested={() => onUsersRequested()} itemSaved={(item) => onItemSaved(item)} />;
             case 'tasks':
-                return <h1>tasks here</h1>
-                //return <PtItemTasksComponent tasks$={tasks$} addNewTask={(newTask) => onAddNewTask(newTask)} updateTask={(taskUpdate) => onUpdateTask(taskUpdate)} />;
+                return <PtItemTasksComponent 
+                    tasks={item.tasks} 
+                    addTaskMutation={addTaskMutation} 
+                    deleteTaskMutation={deleteTaskMutation}
+                    toggleTaskCompletionMutation={toggleTaskCompletionMutation}
+                    addNewTask={(newTask) => onAddNewTask(newTask)} 
+                    updateTask={(taskUpdate) => onUpdateTask(taskUpdate)} />;
             case 'chitchat':
                 return <PtItemChitchatComponent comments={comments} currentUser={currentUser!} addNewComment={(newComment) => onAddNewComment(newComment)} />;
 
