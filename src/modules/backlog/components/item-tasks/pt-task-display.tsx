@@ -4,6 +4,9 @@ export type PtTaskDisplayComponentProps = {
     task: PtTask;
     onToggleTaskCompletion: (task: PtTask) => void;
     onDeleteTask: (task: PtTask) => void;
+    onTaskFocused: (task: PtTask) => void;
+    onTaskBlurred: (task: PtTask) => void;
+    taskTitleChange: (task: PtTask, newTitle: string) => void;
     //completeTaskMutation: MutationFunction<PtTask, PtTask>;
     //deleteTaskMutation: MutationFunction<boolean, PtTask>;
 };
@@ -16,6 +19,7 @@ export function PtTaskDisplayComponent(props: PtTaskDisplayComponentProps) {
         if (task.title === event.target.value) {
             return;
         }
+        props.taskTitleChange(task, event.target.value);
     }
 
     function toggleTapped() {
@@ -26,11 +30,12 @@ export function PtTaskDisplayComponent(props: PtTaskDisplayComponentProps) {
         onDeleteTask(task);
     }
     
-
-    function onTaskFocused() {
+    function onFocused() {
+        props.onTaskFocused(task);
     }
 
-    function onTaskBlurred() {
+    function onBlurred() {
+        props.onTaskBlurred(task);
     }
 
     return (
@@ -41,7 +46,7 @@ export function PtTaskDisplayComponent(props: PtTaskDisplayComponentProps) {
                         name={'checked' + task.id} />
                 </div>
             </div>
-            <input defaultValue={task.title} onChange={taskTitleChange} onFocus={onTaskFocused} onBlur={onTaskBlurred}
+            <input defaultValue={task.title} onChange={taskTitleChange} onFocus={onFocused} onBlur={onBlurred}
                 type="text" className="form-control" aria-label="Text input with checkbox" name={'tasktitle' + task.id} />
 
             <div className="input-group-append">

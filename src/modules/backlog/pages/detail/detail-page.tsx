@@ -67,11 +67,6 @@ export function DetailPage(props: any) {
         return updatedItem;
     });
     
-    useEffect(() => {
-        //debugger;
-        //history.push(`/detail/${itemId}/${screen}`);
-    }, [selectedDetailsScreen]);
-
     const addTaskMutation = useMutation(async (newTaskItem: PtNewTask) => {
         const createdTask = await backlogService.addNewPtTask(newTaskItem, item!);
         return createdTask;
@@ -79,6 +74,11 @@ export function DetailPage(props: any) {
 
     const toggleTaskCompletionMutation = useMutation(async (task: PtTask) => {
         const updatedTask = await backlogService.updatePtTask(item!, task, true);
+        return updatedTask;
+    });
+
+    const updateTaskMutation = useMutation(async (taskUpdate: PtTaskUpdate) => {
+        const updatedTask = await backlogService.updatePtTask(item!, taskUpdate.task, taskUpdate.task.completed, taskUpdate.newTitle);
         return updatedTask;
     });
 
@@ -211,8 +211,10 @@ export function DetailPage(props: any) {
                     addTaskMutation={addTaskMutation} 
                     deleteTaskMutation={deleteTaskMutation}
                     toggleTaskCompletionMutation={toggleTaskCompletionMutation}
-                    addNewTask={(newTask) => onAddNewTask(newTask)} 
-                    updateTask={(taskUpdate) => onUpdateTask(taskUpdate)} />;
+                    updateTaskMutation={updateTaskMutation}
+                    //addNewTask={(newTask) => onAddNewTask(newTask)} 
+                    //updateTask={(taskUpdate) => onUpdateTask(taskUpdate)} 
+                    />;
             case 'chitchat':
                 return <PtItemChitchatComponent comments={comments} currentUser={currentUser!} addNewComment={(newComment) => onAddNewComment(newComment)} />;
 

@@ -12,9 +12,10 @@ export type PtItemTasksComponentProps = {
     addTaskMutation: UseMutationResult<PtTask, unknown, PtNewTask, unknown>;
     deleteTaskMutation: UseMutationResult<boolean, unknown, PtTask, unknown>;
     toggleTaskCompletionMutation: UseMutationResult<PtTask, unknown, PtTask, unknown>;
+    updateTaskMutation: UseMutationResult<PtTask, unknown, PtTaskUpdate, unknown>;
     
-    addNewTask: (newTask: PtNewTask) => void;
-    updateTask: (taskUpdate: PtTaskUpdate) => void;
+    //addNewTask: (newTask: PtNewTask) => void;
+    //updateTask: (taskUpdate: PtTaskUpdate) => void;
 };
 
 export function PtItemTasksComponent(props: PtItemTasksComponentProps) {
@@ -50,30 +51,50 @@ export function PtItemTasksComponent(props: PtItemTasksComponentProps) {
     }
 
 
-    function taskTitleChange(task: PtTask, event: any) {
-        if (task.title === event.target.value) {
+    function taskTitleChange(task: PtTask, newTitle: string) {
+        if (task.title === newTitle) {
             return;
         }
         
-        setLastUpdatedTitle(event.target.value);
+        setLastUpdatedTitle(newTitle);
     }
 
     function onTaskFocused(task: PtTask) {
         setLastUpdatedTitle(task.title ? task.title : EMPTY_STRING);
     }
 
+    function updateTask(task: PtTask) {
+        const index = tasks.findIndex(t => t.id === task.id);
+        const taskUpdate: PtTaskUpdate = {
+            task: task,
+            newTitle: lastUpdatedTitle,
+            toggle: false,
+        };
+        
+        props.updateTaskMutation.mutate(taskUpdate, {
+            onSuccess(updatedTask) {
+                const newTasks = [...tasks];
+                newTasks[index].title = updatedTask.title;
+                setTasks(newTasks);
+            },
+        });
+    }
+
     function onTaskBlurred(task: PtTask) {
         if (task.title === lastUpdatedTitle) {
             return;
         }
+        updateTask(task);
+        /*
         const taskUpdate: PtTaskUpdate = {
             task: task,
             toggle: false,
             newTitle: lastUpdatedTitle
         };
+        */
 
         setLastUpdatedTitle(EMPTY_STRING);
-        props.updateTask(taskUpdate);
+       // props.updateTask(taskUpdate);
     }
 
     const removeTask = (index: number) => {
@@ -108,7 +129,11 @@ export function PtItemTasksComponent(props: PtItemTasksComponentProps) {
                             key={task.id}
                             task={task} 
                             onToggleTaskCompletion={toggleTapped} 
-                            onDeleteTask={deleteTapped}/>
+                            onDeleteTask={deleteTapped}
+                            onTaskFocused={onTaskFocused}
+                            onTaskBlurred={onTaskBlurred}
+                            taskTitleChange={taskTitleChange}
+                            />
                     );
                 })
             }
