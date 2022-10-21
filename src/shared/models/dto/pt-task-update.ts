@@ -1,8 +1,6 @@
 import { PtTask } from '../../../core/models/domain';
 
-export interface PtTaskUpdate {
+export interface PtTaskTitleUpdate {
     task: PtTask;
-    toggle: boolean;
-    newTitle?: string;
-    delete?: boolean;
+    newTitle: string;
 }

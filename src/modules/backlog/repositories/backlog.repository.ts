@@ -1,4 +1,4 @@
-import { PtTask, PtItem, PtComment } from '../../../core/models/domain';
+import { PtTask, PtItem, PtComment, PtCommentToBe, PtTaskToBe } from '../../../core/models/domain';
 import { CONFIG } from '../../../config';
 import { PresetType } from '../../../core/models/domain/types';
 
@@ -111,12 +111,12 @@ export class BacklogRepository {
  */
 
     public insertPtTask(
-        task: PtTask,
+        taskToBe: PtTaskToBe,
         ptItemId: number
     ): Promise<PtTask> {
         return fetch(this.postPtTaskUrl(), {
             method: 'POST',
-            body: JSON.stringify({ task: task, itemId: ptItemId }),
+            body: JSON.stringify({ task: taskToBe, itemId: ptItemId }),
             headers: this.getJSONHeader()
         })
             .then(response => response.json());
@@ -146,12 +146,12 @@ export class BacklogRepository {
 
 
     public insertPtComment(
-        comment: PtComment,
+        commentToBe: PtCommentToBe,
         ptItemId: number
     ): Promise<PtComment> {
         return fetch(this.postPtCommentUrl(), {
             method: 'POST',
-            body: JSON.stringify({ comment: comment, itemId: ptItemId }),
+            body: JSON.stringify({ comment: commentToBe, itemId: ptItemId }),
             headers: this.getJSONHeader()
         })
             .then(response => response.json());

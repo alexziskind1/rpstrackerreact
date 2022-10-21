@@ -5,3 +5,5 @@ export interface PtTask extends PtObjectBase {
     dateStart?: Date;
     dateEnd?: Date;
 }
+
+export type PtTaskToBe = Omit<PtTask, 'id'>;

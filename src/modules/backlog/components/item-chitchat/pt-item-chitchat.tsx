@@ -1,64 +1,39 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { PtComment, PtUser } from "../../../../core/models/domain";
-import { EMPTY_STRING } from "../../../../core/helpers";
-import { BehaviorSubject } from "rxjs";
 import { PtNewComment } from "../../../../shared/models/dto/pt-new-comment";
 
 import './pt-item-chitchat.css';
+import { NewCommentForm } from "./new-comment-form";
+import { UseMutationResult } from "react-query";
+import { PtCommentDisplayComponent } from "./comment-display";
 
-interface PtItemChitchatComponentProps {
-    //comments$: BehaviorSubject<PtComment[]>;
+export type PtItemChitchatComponentProps = {
     comments: PtComment[];
     currentUser: PtUser;
-    addNewComment: (newComment: PtNewComment) => void;
-}
+    addCommentMutation: UseMutationResult<PtComment, unknown, PtNewComment, unknown>;
+};
 
 export function PtItemChitchatComponent(props: PtItemChitchatComponentProps) {
 
-    const [newCommentText, setNewCommentText] = useState(EMPTY_STRING);
     const [comments, setComments] = useState<PtComment[]>(props.comments);
-    useEffect(()=>{
-       
-    }, [comments]);
 
-    //function componentDidMount() {
-    //props.comments$.subscribe((comments: PtComment[]) => {
-    //    setComments(comments);
-    //});
-    //}
+    const addComment = (text: string) => {
+        const newComment: PtNewComment = { title: text };
+        props.addCommentMutation.mutate(newComment, {
+            onSuccess(createdTask) {
+                const newComments = [createdTask, ...comments];
+                setComments(newComments);
+            },
+        });
+    };
 
-    function onNewCommentChanged(e: any) {
-        setNewCommentText(e.target.value);
-    }
-
-    function onAddTapped() {
-        debugger;
-        const newTitle = newCommentText.trim();
-        if (newTitle.length === 0) {
-            return;
-        }
-        const newComment: PtNewComment = {
-            title: newTitle
-        };
-        props.addNewComment(newComment);
-
-        setNewCommentText(EMPTY_STRING);
-    }
 
     return (
-        <React.Fragment>
-            <form>
-                <div className="form-row align-items-center">
-
-                    <img src={props.currentUser.avatar} className="mr-3 li-avatar rounded" />
-
-                    <div className="col-sm-6">
-                        <textarea defaultValue={newCommentText} onChange={(e) => onNewCommentChanged(e)} placeholder="Enter new comment..." className="form-control pt-text-comment-add"
-                            name="newComment"></textarea>
-                    </div>
-                    <button type="button" onClick={() => onAddTapped()} className="btn btn-primary" disabled={!newCommentText}>Add</button>
-                </div>
-            </form >
+        <>
+            <NewCommentForm 
+                addComment={addComment}  
+                currentUser={props.currentUser} 
+            />
 
             <hr />
 
@@ -66,20 +41,12 @@ export function PtItemChitchatComponent(props: PtItemChitchatComponentProps) {
                 {
                     comments.map(comment => {
                         return (
-                            <li key={comment.id} className="media chitchat-item">
-                                <img src={comment.user!.avatar} className="mr-3 li-avatar rounded" />
-                                <div className="media-body">
-                                    <h6 className="mt-0 mb-1"><span>{comment.user!.fullName}</span><span className="li-date">{comment.dateCreated.toString()}</span></h6>
-
-                                    <span className="chitchat-text ">{comment.title}</span>
-
-                                </div>
-                            </li>
+                            <PtCommentDisplayComponent key={comment.id} comment={comment} />
                         );
                     })
                 }
             </ul>
-        </React.Fragment >
+        </>
     );
    
 }

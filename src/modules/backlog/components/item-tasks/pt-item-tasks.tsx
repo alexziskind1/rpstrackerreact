@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PtTask } from "../../../../core/models/domain";
 import { EMPTY_STRING } from "../../../../core/helpers";
-import { PtTaskUpdate } from "../../../../shared/models/dto/pt-task-update";
+import { PtTaskTitleUpdate } from "../../../../shared/models/dto/pt-task-update";
 import { PtNewTask } from "../../../../shared/models/dto/pt-new-task";
 import { PtTaskDisplayComponent } from "./pt-task-display";
 import { UseMutationResult } from "react-query";
@@ -12,7 +12,7 @@ export type PtItemTasksComponentProps = {
     addTaskMutation: UseMutationResult<PtTask, unknown, PtNewTask, unknown>;
     deleteTaskMutation: UseMutationResult<boolean, unknown, PtTask, unknown>;
     toggleTaskCompletionMutation: UseMutationResult<PtTask, unknown, PtTask, unknown>;
-    updateTaskMutation: UseMutationResult<PtTask, unknown, PtTaskUpdate, unknown>;
+    updateTaskMutation: UseMutationResult<PtTask, unknown, PtTaskTitleUpdate, unknown>;
 };
 
 export function PtItemTasksComponent(props: PtItemTasksComponentProps) {
@@ -62,10 +62,9 @@ export function PtItemTasksComponent(props: PtItemTasksComponentProps) {
 
     function updateTask(task: PtTask) {
         const index = tasks.findIndex(t => t.id === task.id);
-        const taskUpdate: PtTaskUpdate = {
+        const taskUpdate: PtTaskTitleUpdate = {
             task: task,
-            newTitle: lastUpdatedTitle,
-            toggle: false,
+            newTitle: lastUpdatedTitle
         };
         
         props.updateTaskMutation.mutate(taskUpdate, {
@@ -106,7 +105,6 @@ export function PtItemTasksComponent(props: PtItemTasksComponentProps) {
 
     return (
         <div>
-
             <NewTaskForm addTask={addTask} />
 
             <hr />
@@ -126,8 +124,6 @@ export function PtItemTasksComponent(props: PtItemTasksComponentProps) {
                     );
                 })
             }
-
-           
         </div>
     );
     

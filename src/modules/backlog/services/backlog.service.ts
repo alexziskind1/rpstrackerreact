@@ -1,7 +1,7 @@
 import { Store } from '../../../core/state/app-store';
 import { BacklogRepository } from '../repositories/backlog.repository';
 
-import { PtItem, PtUser, PtTask, PtComment } from '../../../core/models/domain';
+import { PtItem, PtUser, PtTask, PtComment, PtCommentToBe, PtTaskToBe } from '../../../core/models/domain';
 
 import { PriorityEnum, StatusEnum } from '../../../core/models/domain/enums';
 import { getUserAvatarUrl } from '../../../core/helpers/user-avatar-helper';
@@ -10,7 +10,7 @@ import { map, tap } from 'rxjs/operators';
 
 import { CONFIG } from '../../../config';
 import { PresetType } from '../../../core/models/domain/types';
-import { datesForTask, datesForPtItem } from '../../../core/helpers/date-utils';
+import { datesForTask, datesForComment, datesForPtItem } from '../../../core/helpers/date-utils';
 import { PtNewItem } from '../../../shared/models/dto/pt-new-item';
 import { PtNewTask } from '../../../shared/models/dto/pt-new-task';
 import { PtNewComment } from '../../../shared/models/dto/pt-new-comment';
@@ -83,6 +83,7 @@ export class BacklogService {
                 this.setUserAvatarUrl(ptItem.assignee);
                 ptItem.comments.forEach(c => this.setUserAvatarUrl(c.user));
                 ptItem.tasks.forEach(t => datesForTask(t));
+                ptItem.comments.forEach(c => datesForComment(c));
                 return ptItem;
             });
     }
@@ -137,8 +138,7 @@ export class BacklogService {
 */
 
     public addNewPtTask(newTask: PtNewTask, currentItem: PtItem): Promise<PtTask> {
-        const task: PtTask = {
-            id: 0,
+        const taskToBe: PtTaskToBe = {
             title: newTask.title,
             completed: false,
             dateCreated: new Date(),
@@ -148,7 +148,7 @@ export class BacklogService {
         };
         return new Promise<PtTask>((resolve, reject) => {
             this.repo.insertPtTask(
-                task,
+                taskToBe,
                 currentItem.id)
                 .then((nextTask: PtTask) => {
                     datesForTask(nextTask);
@@ -198,22 +198,22 @@ export class BacklogService {
     }
 
     public addNewPtComment(newComment: PtNewComment, currentItem: PtItem): Promise<PtComment> {
-        const comment: PtComment = {
-            id: 0,
+        const commentToBe: PtCommentToBe = {
             title: newComment.title,
             user: this.store.value.currentUser,
             dateCreated: new Date(),
             dateModified: new Date()
         };
+
         return new Promise<PtComment>((resolve, reject) => {
             this.repo.insertPtComment(
-                comment,
+                commentToBe,
                 currentItem.id
             )
                 .then((nextComment: PtComment) => {
+                    datesForComment(nextComment);
                     resolve(nextComment);
-                }
-                );
+                });
         });
     }
 
