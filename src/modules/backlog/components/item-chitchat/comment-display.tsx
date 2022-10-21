@@ -7,7 +7,6 @@ export type PtCommentDisplayComponentProps = {
 export function PtCommentDisplayComponent(props: PtCommentDisplayComponentProps) {
 
     const { comment } = props;
-    debugger;
     const dateStr = comment.dateCreated.toDateString();
 
     return (

@@ -1,16 +1,14 @@
 import { Store } from '../../../core/state/app-store';
 import { BacklogRepository } from '../repositories/backlog.repository';
 
-import { PtItem, PtUser, PtTask, PtComment, PtCommentToBe, PtTaskToBe } from '../../../core/models/domain';
+import { PtItem, PtUser, PtTask, PtComment, PtCommentToBe, PtTaskToBe, PtItemServer, ptItemsServerToPtItems, ptItemServerToPtItem, PtTaskServer, ptTaskServerToPtTask, PtCommentServer, ptCommentServerToPtComment } from '../../../core/models/domain';
 
 import { PriorityEnum, StatusEnum } from '../../../core/models/domain/enums';
 import { getUserAvatarUrl } from '../../../core/helpers/user-avatar-helper';
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+
 
 import { CONFIG } from '../../../config';
 import { PresetType } from '../../../core/models/domain/types';
-import { datesForTask, datesForComment, datesForPtItem } from '../../../core/helpers/date-utils';
 import { PtNewItem } from '../../../shared/models/dto/pt-new-item';
 import { PtNewTask } from '../../../shared/models/dto/pt-new-task';
 import { PtNewComment } from '../../../shared/models/dto/pt-new-comment';
@@ -50,10 +48,9 @@ export class BacklogService {
 
     public getItems(preset: PresetType): Promise<PtItem[]> {
         return this.repo.getPtItems(preset, this.currentUserId)
-            .then((ptItems: PtItem[]) => {
-
+            .then((ptItemsServer: PtItemServer[]) => {
+                const ptItems = ptItemsServerToPtItems(ptItemsServer);
                 ptItems.forEach(i => {
-                    datesForPtItem(i);
                     this.setUserAvatarUrl(i.assignee);
                     i.comments.forEach(c => this.setUserAvatarUrl(c.user));
                 });
@@ -61,33 +58,15 @@ export class BacklogService {
             });
     }
 
-    /*
-    public getItemFromCacheOrServer(id: number) {
-        // const selectedItem = _.find(this.store.value.backlogItems, i => i.id === id);
-        const selectedItem = this.store.value.backlogItems.find(i => i.id === id);
-        if (selectedItem) {
-
-            this.store.set('currentSelectedItem', selectedItem);
-
-        } else {
-            this.getPtItem(id);
-        }
-    }
-*/
-
-
     public getPtItem(id: number): Promise<PtItem> {
         return this.repo.getPtItem(id)
-            .then((ptItem: PtItem) => {
-                datesForPtItem(ptItem);
+            .then((ptItemServer: PtItemServer) => {
+                const ptItem = ptItemServerToPtItem(ptItemServer);
                 this.setUserAvatarUrl(ptItem.assignee);
                 ptItem.comments.forEach(c => this.setUserAvatarUrl(c.user));
-                ptItem.tasks.forEach(t => datesForTask(t));
-                ptItem.comments.forEach(c => datesForComment(c));
                 return ptItem;
             });
     }
-
 
     public addNewPtItem(newItem: PtNewItem, assignee: PtUser): Promise<PtItem> {
         const item: PtItem = {
@@ -106,11 +85,9 @@ export class BacklogService {
         };
         return new Promise<PtItem>((resolve, reject) => {
             this.repo.insertPtItem(item)
-                .then((nextItem: PtItem) => {
-                    datesForPtItem(nextItem);
+                .then((nextItemServer: PtItemServer) => {
+                    const nextItem = ptItemServerToPtItem(nextItemServer);
                     this.setUserAvatar(nextItem.assignee);
-
-                    nextItem.tasks.forEach(t => datesForTask(t));
                     resolve(nextItem);
                 });
         });
@@ -118,7 +95,14 @@ export class BacklogService {
 
 
     public updatePtItem(item: PtItem): Promise<PtItem> {
-        return this.repo.updatePtItem(item);
+        return new Promise<PtItem>((resolve, reject) => {
+            this.repo.updatePtItem(item)
+                .then((updatedItemServer: PtItemServer) => {
+                    const updatedItem = ptItemServerToPtItem(updatedItemServer);
+                    this.setUserAvatar(updatedItem.assignee);
+                    resolve(updatedItem);
+                });
+        });
     }
 
     /*
@@ -150,11 +134,11 @@ export class BacklogService {
             this.repo.insertPtTask(
                 taskToBe,
                 currentItem.id)
-                .then((nextTask: PtTask) => {
-                    datesForTask(nextTask);
+                .then((nextTaskServer: PtTaskServer) => {
+                    const nextTask = ptTaskServerToPtTask(nextTaskServer);
                     resolve(nextTask);
                 }
-                );
+            );
         });
     }
 
@@ -173,11 +157,11 @@ export class BacklogService {
             this.repo.updatePtTask(
                 taskToUpdate,
                 currentItem.id)
-                .then((updatedTask: PtTask) => {
-                    datesForTask(updatedTask);
+                .then((updatedTaskServer: PtTaskServer) => {
+                    const updatedTask = ptTaskServerToPtTask(updatedTaskServer);
                     resolve(updatedTask);
                 }
-                );
+            );
         });
     }
 
@@ -210,8 +194,8 @@ export class BacklogService {
                 commentToBe,
                 currentItem.id
             )
-                .then((nextComment: PtComment) => {
-                    datesForComment(nextComment);
+                .then((nextCommentServer: PtCommentServer) => {
+                    const nextComment = ptCommentServerToPtComment(nextCommentServer);
                     resolve(nextComment);
                 });
         });
