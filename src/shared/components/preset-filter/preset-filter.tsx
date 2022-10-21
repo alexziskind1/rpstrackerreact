@@ -1,5 +1,5 @@
 import { PresetType } from "../../../core/models/domain/types";
-interface AppPresetFilterProps {
+type AppPresetFilterProps  = {
     selectedPreset: PresetType;
     onSelectPresetTap: (preset: PresetType) => void;
 }
