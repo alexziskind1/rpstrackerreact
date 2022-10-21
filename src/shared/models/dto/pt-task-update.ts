@@ -1,6 +1,6 @@
 import { PtTask } from '../../../core/models/domain';
 
-export interface PtTaskTitleUpdate {
+export type PtTaskTitleUpdate = {
     task: PtTask;
     newTitle: string;
 }

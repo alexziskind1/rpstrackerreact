@@ -1,6 +1,6 @@
 import { PtItem } from '../../../core/models/domain';
 
-export interface PtItemDetailsEditFormModel {
+export type PtItemDetailsEditFormModel = {
     title: string;
     description: string;
     typeStr: string;

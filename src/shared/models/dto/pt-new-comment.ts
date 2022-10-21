@@ -1,3 +1,3 @@
-export interface PtNewComment {
+export type PtNewComment = {
     title: string;
 }
