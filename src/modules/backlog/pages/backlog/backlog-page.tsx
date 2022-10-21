@@ -12,7 +12,7 @@ import { PtNewItem } from "../../../../shared/models/dto/pt-new-item";
 import { useHistory, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AddItemModal } from "../../components/add-item-modal/add-item-modal";
-import { BacklogRow } from "../../components/backlog-row/backlog-row";
+import { BacklogList } from "../../components/backlog-list/backlog-list";
 
 
 const store: Store = new Store();
@@ -83,11 +83,7 @@ export function BacklogPage() {
         );
     }
 
-    const rows = items.map(i => {
-        return (
-            <BacklogRow key={i.id} item={i} />
-        );
-    });
+
 
     return (
         <React.Fragment>
@@ -102,24 +98,7 @@ export function BacklogPage() {
                 </div>
             </div>
 
-            <div className="table-responsive">
-                <table className="table table-striped table-sm table-hover">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Assignee</th>
-                            <th>Title</th>
-                            <th>Status</th>
-                            <th>Priority</th>
-                            <th>Estimate</th>
-                            <th>Created</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows}
-                    </tbody>
-                </table>
-            </div>
+            <BacklogList items={items} />
 
             <AddItemModal 
                 onNewItemSave={onNewItemSave} 
