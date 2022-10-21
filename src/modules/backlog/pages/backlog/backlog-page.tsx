@@ -9,7 +9,7 @@ import './backlog-page.css';
 
 import { AppPresetFilter } from "../../../../shared/components/preset-filter/preset-filter";
 import { PtNewItem } from "../../../../shared/models/dto/pt-new-item";
-import { useHistory, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AddItemModal } from "../../components/add-item-modal/add-item-modal";
 import { BacklogList } from "../../components/backlog-list/backlog-list";
@@ -24,7 +24,7 @@ type GetPtItemsParams = Parameters<typeof backlogService.getItems>;
 export function BacklogPage() {
 
     const queryClient = useQueryClient();
-    const history = useHistory();
+    const navigate = useNavigate();
     
     const { preset } = useParams() as {preset: PresetType};
     const [currentPreset, setCurrentPreset] = useState<PresetType>(preset ? preset : 'open');
@@ -47,7 +47,7 @@ export function BacklogPage() {
     });
     
     useEffect(()=>{
-        history.push(`/backlog/${[currentPreset]}`);
+        navigate(`/backlog/${[currentPreset]}`);
     },[currentPreset]);
     
     const [isAddModalShowing, setIsAddModalShowing] = useState(false);

@@ -1,4 +1,4 @@
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ItemType } from "../../../../core/constants";
 import { PtItem } from "../../../../core/models/domain";
 import { getIndicatorClass } from "../../../../shared/helpers/priority-styling";
@@ -10,7 +10,7 @@ export type BacklogRowProps = {
 export function BacklogRow(props: BacklogRowProps) {
     
     const { item: i } = props;
-    const history = useHistory();
+    const navigate = useNavigate();
 
     function getIndicatorImage(item: PtItem) {
         return ItemType.imageResFromType(item.type);
@@ -23,7 +23,7 @@ export function BacklogRow(props: BacklogRowProps) {
     
     function listItemTap(item: PtItem) {
         // navigate to detail page
-        history.push(`/detail/${item.id}`);
+        navigate(`/detail/${item.id}`);
     }
 
     return (

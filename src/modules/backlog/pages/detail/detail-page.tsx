@@ -15,7 +15,7 @@ import { PtTaskTitleUpdate } from "../../../../shared/models/dto/pt-task-update"
 import { PtItemChitchatComponent } from "../../components/item-chitchat/pt-item-chitchat";
 import { PtNewComment } from "../../../../shared/models/dto/pt-new-comment";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useHistory, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 
 const store: Store = new Store();
@@ -34,7 +34,7 @@ export function DetailPage() {
     const { id: itemId, screen } = useParams() as { id: string, screen: DetailScreenType };
 
     const queryClient = useQueryClient();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const useItem = (...params: GetPtItemParams) => {
         return useQuery<PtItem, Error>(queryTag, () => backlogService.getPtItem(...params));
@@ -76,7 +76,7 @@ export function DetailPage() {
 
     function onScreenSelected(screen: DetailScreenType) {
         setSelectedDetailsScreen(screen);
-        history.push(`/detail/${itemId}/${screen}`);
+        navigate(`/detail/${itemId}/${screen}`);
     }
 
     function onItemSaved(item: PtItem) {
@@ -119,6 +119,12 @@ export function DetailPage() {
         }
     }
 
+    if (!screen) {
+        return (
+            <Navigate replace to={`/detail/${itemId}/details`}/>
+        );
+    }
+    
     if (queryResult.isLoading) {
         return <div>Loading...</div>
     }

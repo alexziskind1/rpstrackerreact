@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import './App.css';
 
@@ -24,27 +24,15 @@ function App() {
               <SideMenu></SideMenu>
 
               <main role="main" className="col-md-9 ml-sm-auto col-lg-10 px-4">
-              <Switch>
-                  <Route exact path="/">
-                    <Redirect exact to={{ pathname: "/dashboard" }} />
-                  </Route>
-                
-                  <Route exact path="/dashboard" component={DashboardPage} />
-                  <Route exact path="/backlog">
-                    <Redirect exact to={{ pathname: "/backlog/open" }} />
-                  </Route>
-                  <Route exact path="/backlog/:preset" component={BacklogPage} />
+                <Routes>
+                  <Route path="dashboard" element={<DashboardPage/>} />
+                  <Route path="/" element={<Navigate replace to="/dashboard" />} />
+                  <Route path="backlog" element={<Navigate replace to="/backlog/open" />}/>
+                  <Route path="/backlog/:preset" element={<BacklogPage/>} />
 
-                  <Route
-                    exact
-                    path="/detail/:id"
-                    render={({ match }) => (
-                      <Redirect to={`/detail/${match.params.id}/details`} />
-                    )}
-                  />
-
-                  <Route exact path="/detail/:id/:screen" component={DetailPage} />
-                </Switch>
+                  <Route path="/detail/:id" element={<DetailPage/>} />
+                  <Route path="/detail/:id/:screen" element={<DetailPage/>} />
+                </Routes>
               </main>
             </div>
           </div>
