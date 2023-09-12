@@ -37,7 +37,7 @@ export function PtTaskDisplayComponent(props: PtTaskDisplayComponentProps) {
     }
 
     return (
-        <div key={task.id} className="input-group mb-3 col-sm-6">
+        <div key={task.id} className="input-group mb-3 col-sm-12">
             <div className="input-group-prepend">
                 <div className="input-group-text">
                     <input type="checkbox" checked={task.completed} onChange={toggleTapped} aria-label="Checkbox for following text input"

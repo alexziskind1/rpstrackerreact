@@ -1,27 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { BacklogService } from "../../services/backlog.service";
-import { BacklogRepository } from "../../repositories/backlog.repository";
-import { Store } from "../../../../core/state/app-store";
-import { PresetType } from "../../../../core/models/domain/types";
-import { PtItem } from "../../../../core/models/domain";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import './backlog-page.css';
 
+import { PresetType } from "../../../../core/models/domain/types";
+import { PtItem } from "../../../../core/models/domain";
 import { AppPresetFilter } from "../../../../shared/components/preset-filter/preset-filter";
 import { PtNewItem } from "../../../../shared/models/dto/pt-new-item";
-import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AddItemModal } from "../../components/add-item-modal/add-item-modal";
 import { BacklogList } from "../../components/backlog-list/backlog-list";
+import { PtBacklogServiceContext, PtStoreContext } from "../../../../App";
 
-
-const store: Store = new Store();
-const backlogRepo: BacklogRepository = new BacklogRepository();
-const backlogService: BacklogService = new BacklogService(backlogRepo, store);
-
-type GetPtItemsParams = Parameters<typeof backlogService.getItems>;
 
 export function BacklogPage() {
+    const store = useContext(PtStoreContext);
+    const backlogService = useContext(PtBacklogServiceContext);
+
+    
 
     const queryClient = useQueryClient();
     const navigate = useNavigate();
@@ -29,7 +25,7 @@ export function BacklogPage() {
     const { preset } = useParams() as {preset: PresetType};
     const [currentPreset, setCurrentPreset] = useState<PresetType>(preset ? preset : 'open');
 
-    const useItems = (...params: GetPtItemsParams) => {
+    const useItems = (...params: Parameters<typeof backlogService.getItems>) => {
         return useQuery<PtItem[], Error>(getQueryKey(), () => backlogService.getItems(...params));
     }
     const queryResult = useItems(currentPreset);

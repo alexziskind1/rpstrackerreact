@@ -6,7 +6,6 @@ type PtItemCommon = {
     description?: string;
     priority: PriorityEnum;
     status: StatusEnum;
-    estimate: number;
     type: PtItemType;
 };
 
@@ -34,13 +33,22 @@ type PtItemWithTasksServer = {
     tasks: PtTaskServer[];
 };
 
-export type PtItem = PtObjectBase & PtItemCommon & PtItemWithAssignee & PtItemWithComments & PtItemWithTasks;
-export type PtItemServer = PtObjectBaseServer & PtItemCommon & PtItemWithAssigneeServer & PtItemWithCommentsServer & PtItemWithTasksServer;
+type PtItemWithEstimate = {
+    estimate: number;
+};
+
+type PtItemWithEstimateServer = {
+    estimate: string;
+};
+
+export type PtItem = PtObjectBase & PtItemCommon & PtItemWithEstimate & PtItemWithAssignee & PtItemWithComments & PtItemWithTasks;
+export type PtItemServer = PtObjectBaseServer & PtItemCommon & PtItemWithEstimateServer & PtItemWithAssigneeServer & PtItemWithCommentsServer & PtItemWithTasksServer;
 
 
 export function ptItemServerToPtItem(item: PtItemServer): PtItem {
     return {
         ...item,
+        estimate: item.estimate ? parseInt(item.estimate, 10) : 0,
         dateCreated: new Date(item.dateCreated),
         dateModified: new Date(item.dateModified),
         dateDeleted: item.dateDeleted ? new Date(item.dateDeleted) : undefined,
@@ -61,7 +69,7 @@ const b: PtItemServer = {
     description: 'description',
     priority: PriorityEnum.Medium,
     status: StatusEnum.Open,
-    estimate: 0,
+    estimate: '10',
     type: 'Bug',
     assignee: {
         id: 0,

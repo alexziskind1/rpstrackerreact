@@ -1,32 +1,38 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+
+import { Observable } from "rxjs";
 
 import { PtItem, PtUser, PtTask } from "../../../../core/models/domain";
 import { DetailScreenType } from "../../../../shared/models/ui/types/detail-screens";
-import { Store } from "../../../../core/state/app-store";
-import { BacklogRepository } from "../../repositories/backlog.repository";
-import { BacklogService } from "../../services/backlog.service";
 import { PtItemDetailsComponent } from "../../components/item-details/pt-item-details";
 import { PtItemTasksComponent } from "../../components/item-tasks/pt-item-tasks";
-
-import { PtUserService } from "../../../../core/services/pt-user-service";
-import { Observable } from "rxjs";
 import { PtNewTask } from "../../../../shared/models/dto/pt-new-task";
 import { PtTaskTitleUpdate } from "../../../../shared/models/dto/pt-task-update";
 import { PtItemChitchatComponent } from "../../components/item-chitchat/pt-item-chitchat";
 import { PtNewComment } from "../../../../shared/models/dto/pt-new-comment";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+
+import { PtBacklogServiceContext, PtStoreContext, PtUserServiceContext } from "../../../../App";
 
 
-const store: Store = new Store();
-const backlogRepo: BacklogRepository = new BacklogRepository();
-const backlogService: BacklogService = new BacklogService(backlogRepo, store);
-const ptUserService: PtUserService = new PtUserService(store);
-
-type GetPtItemParams = Parameters<typeof backlogService.getPtItem>;
 const queryTag = 'item';
 
+const screenPositionMap: { [key in DetailScreenType | number]: number | DetailScreenType } = {
+    0: 'details',
+    1: 'tasks',
+    2: 'chitchat',
+    'details': 0,
+    'tasks': 1,
+    'chitchat': 2
+};
+
+
 export function DetailPage() {
+
+    const store = useContext(PtStoreContext);
+    const backlogService = useContext(PtBacklogServiceContext);
+    const userService = useContext(PtUserServiceContext);
 
     const currentUser = store.value.currentUser;
     const users$: Observable<PtUser[]> = store.select<PtUser[]>('users');
@@ -36,7 +42,7 @@ export function DetailPage() {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
 
-    const useItem = (...params: GetPtItemParams) => {
+    const useItem = (...params: Parameters<typeof backlogService.getPtItem>) => {
         return useQuery<PtItem, Error>(queryTag, () => backlogService.getPtItem(...params));
     }
     const queryResult = useItem(parseInt(itemId));
@@ -88,7 +94,7 @@ export function DetailPage() {
     }
 
     function onUsersRequested() {
-        ptUserService.fetchUsers();
+        userService.fetchUsers();
     }
 
     function screenRender(screen: DetailScreenType, item: PtItem) {
