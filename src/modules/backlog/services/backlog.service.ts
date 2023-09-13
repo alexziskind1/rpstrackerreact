@@ -46,8 +46,8 @@ export class BacklogService {
         this.store.value.currentUser = tempCurrentUser;
     }
 
-    public getItems(preset: PresetType): Promise<PtItem[]> {
-        return this.repo.getPtItems(preset, this.currentUserId)
+    public getItems(preset: PresetType, searchTerm: string): Promise<PtItem[]> {
+        return this.repo.getPtItems(preset, searchTerm, this.currentUserId)
             .then((ptItemsServer: PtItemServer[]) => {
                 const ptItems = ptItemsServerToPtItems(ptItemsServer);
                 ptItems.forEach(i => {

@@ -1,10 +1,21 @@
 import { PtTask, PtItem, PtComment, PtCommentToBe, PtTaskToBe, PtItemServer, PtTaskServer, PtCommentServer } from '../../../core/models/domain';
 import { CONFIG } from '../../../config';
 import { PresetType } from '../../../core/models/domain/types';
+import urlcat from 'urlcat';
 
 export class BacklogRepository {
 
-    private getFilteredBacklogUrl(currentPreset: PresetType, currentUserId?: number) {
+    private getFilteredBacklogUrl(currentPreset: PresetType, searchTerm: string, currentUserId?: number) {
+
+        let url = `${CONFIG.apiEndpoint}/backlog`;
+
+        if (currentPreset == 'my') {
+            url = urlcat(CONFIG.apiEndpoint, '/myItems', { userId: currentUserId, search: searchTerm });
+        } else {
+            url = urlcat(CONFIG.apiEndpoint, `/backlog/:preset`, { preset: currentPreset, search: searchTerm });
+        }
+        return url;
+
         switch (currentPreset) {
             case 'my':
                 if (currentUserId) {
@@ -59,10 +70,24 @@ export class BacklogRepository {
 
     public getPtItems(
         currentPreset: PresetType,
+        searchTerm: string,
         currentUserId: number | undefined
     ): Promise<PtItemServer[]> {
-        return fetch(this.getFilteredBacklogUrl(currentPreset, currentUserId))
+
+        let url = this.getFilteredBacklogUrl(currentPreset, searchTerm, currentUserId);
+        console.log(url);
+
+        /*
+        if (searchTerm && searchTerm.length >= 3) {
+            url += `&term=${searchTerm}`;
+        }
+        */
+
+        return fetch(url)
             .then((response: Response) => response.json());
+
+        //return fetch(this.getFilteredBacklogUrl(currentPreset, currentUserId))
+        //    .then((response: Response) => response.json());
     }
 
 

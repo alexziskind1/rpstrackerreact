@@ -22,17 +22,30 @@ export function BacklogPage() {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     
-    const { preset } = useParams() as {preset: PresetType};
+    const { preset, search } = useParams() as {preset: PresetType, search: string};
     const [currentPreset, setCurrentPreset] = useState<PresetType>(preset ? preset : 'open');
+
+
+    const [searchInputVal, setSearchInputVal] = useState(search ? search : '');
+    const [searchTerm, setSearchTerm] = useState(search ? search : '');
+
+    function onSearchValChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setSearchInputVal(e.target.value);
+    }
+
+    function doSearch() {
+        setSearchTerm(searchInputVal);
+    }
+
 
     const useItems = (...params: Parameters<typeof backlogService.getItems>) => {
         return useQuery<PtItem[], Error>(getQueryKey(), () => backlogService.getItems(...params));
     }
-    const queryResult = useItems(currentPreset);
+    const queryResult = useItems(currentPreset, searchTerm);
     const items = queryResult.data;
 
     function getQueryKey() {
-        return ['items', currentPreset];
+        return ['items', currentPreset, searchTerm];
     }
 
     const addItemMutation = useMutation(async (newItem: PtNewItem) => {
@@ -45,10 +58,20 @@ export function BacklogPage() {
     useEffect(()=>{
         navigate(`/backlog/${[currentPreset]}`);
     },[currentPreset]);
+
+    
+    useEffect(()=>{
+        if (searchTerm && searchTerm.length >= 3) {
+            navigate(`/backlog/${[currentPreset]}?search=${searchTerm}`);
+        }
+    },[searchTerm]);
+    
     
     const [isAddModalShowing, setIsAddModalShowing] = useState(false);
 
     function onSelectPresetTap(preset: PresetType) {
+        setSearchTerm('');
+        setSearchInputVal('');
         setCurrentPreset(preset);
     }
 
@@ -63,6 +86,8 @@ export function BacklogPage() {
             },
         });
     }
+
+
 
 
     if (queryResult.isLoading) {
@@ -94,7 +119,17 @@ export function BacklogPage() {
                 </div>
             </div>
 
-            <BacklogList items={items} />
+            <div>
+                <div className="input-group mb-3">
+                    <input placeholder="Search..." type="text" value={searchInputVal} onChange={onSearchValChange} className="form-control"/>
+                    <div className="input-group-append">
+                        <button className="btn btn-outline-secondary" type="button" id="button-addon2" onClick={doSearch}>Search</button>
+                    </div>
+                </div>
+
+                <BacklogList items={items} />
+            </div>
+            
 
             <AddItemModal 
                 onNewItemSave={onNewItemSave} 
