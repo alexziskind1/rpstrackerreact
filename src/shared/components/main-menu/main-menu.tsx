@@ -8,7 +8,7 @@ export function MainMenu(){
             </a>
             <nav className="my-2 my-md-0 mr-md-3">
                 <Link className="p-2 text-light" to="/dashboard">Dashboard</Link>
-                <Link className="p-2 text-light" to="/backlog">Backlog</Link>
+                <Link className="p-2 text-light" to="/backlog?preset=open">Backlog</Link>
             </nav>
         </div>
     );

@@ -53,12 +53,11 @@ function App() {
                   } />
                   <Route path="/" element={<Navigate replace to="/dashboard" />} />
 
-                  <Route path="/backlog/:preset" element={
+                  <Route path="/backlog" element={
                     <PtBacklogServiceContext.Provider value={backlogService}>
                       <BacklogPage/>
                     </PtBacklogServiceContext.Provider>
                   } />
-                  <Route path="backlog" element={<Navigate replace to="/backlog/open" />}/>
 
                   <Route path="/detail/:id" element={<DetailPage/>} />
 
