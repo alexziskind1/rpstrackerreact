@@ -12,7 +12,7 @@ export class BacklogRepository {
         if (currentPreset == 'my') {
             url = urlcat(CONFIG.apiEndpoint, '/myItems', { userId: currentUserId, search: searchTerm });
         } else {
-            url = urlcat(CONFIG.apiEndpoint, `/backlog/:preset`, { preset: currentPreset, search: searchTerm });
+            url = urlcat(CONFIG.apiEndpoint, `/backlog`, { preset: currentPreset, search: searchTerm });
         }
         return url;
 
